@@ -56,6 +56,7 @@ async fn main() -> anyhow::Result<()> {
                         routes::index_controller,
                         routes::jobs_controller,
                         routes::calendar_controller,
+                        routes::favicon_controller,
                     ],
                 )
                 .mount(

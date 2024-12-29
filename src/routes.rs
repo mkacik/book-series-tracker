@@ -21,6 +21,11 @@ pub async fn jobs_controller() -> Result<NamedFile, std::io::Error> {
     index().await
 }
 
+#[get("/favicon.ico")]
+pub async fn favicon_controller() -> Result<NamedFile, std::io::Error> {
+    NamedFile::open("www/favicon.ico").await
+}
+
 #[get("/calendar")]
 pub async fn calendar_controller(db: &State<Arc<Database>>) -> Option<(ContentType, String)> {
     let books = match Book::fetch_all(db).await {
