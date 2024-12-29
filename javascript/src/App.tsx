@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import {
   AddSeriesResult,
@@ -10,7 +10,7 @@ import {
 import { SectionHeader } from "./common";
 import { Books } from "./Books";
 import { Series } from "./Series";
-import { Jobs } from "./Jobs";
+import { Jobs, isJobSuccessful, isJobProcessing } from "./Jobs";
 import logoImg from "./images/logo.png";
 
 enum BackendRoute {
@@ -59,19 +59,19 @@ function getRouteFromURL(): Route {
 }
 
 function App() {
-  // navigation
+  // UI state
   const [route, setRoute] = useState<Route>(getRouteFromURL());
+
+  // backend data
+  const [books, setBooks] = useState<GetAllBooksResult>(null);
+  const [series, setSeries] = useState<GetAllSeriesResult>(null);
+  const [jobs, setJobs] = useState<GetAllJobsResult>(null);
 
   const setActiveRoute = (newRoute: Route): void => {
     let url = new URL(newRoute, window.location.origin);
     history.pushState({}, "", url);
     setRoute(newRoute);
   };
-
-  // backend data
-  const [books, setBooks] = useState<GetAllBooksResult>(null);
-  const [series, setSeries] = useState<GetAllSeriesResult>(null);
-  const [jobs, setJobs] = useState<GetAllJobsResult>(null);
 
   const fetchAndSetBooks = () => {
     fetch(BackendRoute.Books)
@@ -93,7 +93,20 @@ function App() {
     fetch(BackendRoute.Jobs)
       .then((response) => response.json())
       .then((result) => {
-        setJobs(result as GetAllJobsResult);
+        const newJobs = result as GetAllJobsResult;
+
+        // on any job state transition to successful, refetch series and books. Don't need
+        // to compare job by job, count of successful jobs is enough.
+        if (jobs != null) {
+          const oldJobsSuccessCount = jobs.jobs.filter(isJobSuccessful).length;
+          const newJobsSuccessCount = newJobs.jobs.filter(isJobSuccessful).length;
+          if (newJobsSuccessCount > oldJobsSuccessCount) {
+            fetchAndSetSeries();
+            fetchAndSetBooks();
+          }
+        }
+
+        setJobs(newJobs);
       });
   };
 
@@ -105,9 +118,25 @@ function App() {
     fetchAndSetSeries();
   }
 
-  if (jobs == null) {
-    fetchAndSetJobs();
-  }
+  useEffect(() => {
+    if (jobs == null) {
+      fetchAndSetJobs();
+      return () => {};
+    }
+
+    let intervalID = null;
+    let shouldRefresh = jobs.jobs.some(isJobProcessing);
+
+    if (shouldRefresh) {
+      intervalID = setInterval(fetchAndSetJobs, 5000);
+    }
+
+    return () => {
+      if (intervalID != null) {
+        clearInterval(intervalID);
+      }
+    }
+  }, [jobs, fetchAndSetJobs]);
 
   const addSeries = (asin: string): void => {
     fetch(BackendRoute.Series, {
@@ -136,7 +165,6 @@ function App() {
       },
       body: JSON.stringify({ asin: asin }),
     }).then((response) => {
-      console.log(response);
       if (response.ok) {
         fetchAndSetBooks();
         fetchAndSetSeries();
@@ -153,7 +181,6 @@ function App() {
     fetch(BackendRoute.Jobs, {
       method: "POST",
     }).then((response) => {
-      console.log(response);
       if (response.ok) {
         fetchAndSetJobs();
       }

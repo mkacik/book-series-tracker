@@ -1,6 +1,14 @@
 import React from "react";
 import { Job, GetAllJobsResult } from "./generated/types";
 
+export function isJobProcessing(job: Job) {
+  return ["QUEUED", "PROCESSING"].includes(job.status);
+}
+
+export function isJobSuccessful(job: Job) {
+  return (job.status == "SUCCESSFUL");
+}
+
 function formatTimestamp(ts: number) {
   if (ts == null) {
     return "";
