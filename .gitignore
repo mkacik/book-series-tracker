@@ -1,0 +1,5 @@
+db/bst.db
+target/**
+javascript/node_modules/**
+*.swp
+**/bundle.js

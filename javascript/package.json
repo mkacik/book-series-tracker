@@ -1,0 +1,24 @@
+{
+  "name": "bst-js",
+  "version": "1.0.0",
+  "description": "Frontend for Book Series Tracker",
+  "main": "src/App.tsx",
+  "scripts": {
+    "build": "webpack --mode development",
+    "test": "echo \"Error: no test specified\" && exit 2"
+  },
+  "author": "m.m.kacik",
+  "license": "",
+  "dependencies": {
+    "@types/react": "=18.3.1",
+    "@types/react-dom": "=18.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.7.2",
+    "webpack": "^5.96.1",
+    "webpack-cli": "^5.1.4"
+  }
+}

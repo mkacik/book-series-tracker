@@ -1,0 +1,3 @@
+This crate is providing macro that allows generating JS representation of Rust structs. There are
+plenty better tools for this, I did it this way purely to learn about dealing with proc_macros.
+Ended up being good enough, so it stays.
