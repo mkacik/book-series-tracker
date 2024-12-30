@@ -39,16 +39,13 @@ enum Command {
     GenerateJs {},
 }
 
-fn spawn_thread_for_daily_scrape(
-  database: Arc<Database>,
-  job_server: Arc<JobServer>,
-) {
-  tokio::spawn(async move {
-    loop {
-      common::sleep_seconds(86400).await;
-      let _ = api_routes::enqueue_all(&database, &job_server).await;
-    }
-  });
+fn spawn_thread_for_daily_scrape(database: Arc<Database>, job_server: Arc<JobServer>) {
+    tokio::spawn(async move {
+        loop {
+            common::sleep_seconds(86400).await;
+            let _ = api_routes::enqueue_all(&database, &job_server).await;
+        }
+    });
 }
 
 #[rocket::main]

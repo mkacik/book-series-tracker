@@ -99,7 +99,8 @@ function App() {
         // to compare job by job, count of successful jobs is enough.
         if (jobs != null) {
           const oldJobsSuccessCount = jobs.jobs.filter(isJobSuccessful).length;
-          const newJobsSuccessCount = newJobs.jobs.filter(isJobSuccessful).length;
+          const newJobsSuccessCount =
+            newJobs.jobs.filter(isJobSuccessful).length;
           if (newJobsSuccessCount > oldJobsSuccessCount) {
             fetchAndSetSeries();
             fetchAndSetBooks();
@@ -135,7 +136,7 @@ function App() {
       if (intervalID != null) {
         clearInterval(intervalID);
       }
-    }
+    };
   }, [jobs, fetchAndSetJobs]);
 
   const addSeries = (asin: string): void => {
@@ -145,12 +146,16 @@ function App() {
         "Content-Type": "application/json; charset=utf-8",
       },
       body: JSON.stringify({ asin: asin }),
-    }).then((response) => response.json())
+    })
+      .then((response) => response.json())
       .then((result) => {
         if (result.job_id != null) {
           fetchAndSetJobs();
-          alert("Successfully submitted job " + result.job_id +
-            ". Go to Jobs tab to check progress.");
+          alert(
+            "Successfully submitted job " +
+              result.job_id +
+              ". Go to Jobs tab to check progress.",
+          );
         } else {
           alert("Error while submitting job: " + result.error);
         }
@@ -174,8 +179,12 @@ function App() {
 
   const deleteAllJobs = (event: React.SyntheticEvent): void => {
     event.preventDefault();
-      
-    if (confirm("Do you really want to delete all finished jobs from database?") != true) {
+
+    if (
+      confirm(
+        "Do you really want to delete all finished jobs from database?",
+      ) != true
+    ) {
       return;
     }
 

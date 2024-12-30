@@ -2,7 +2,7 @@ use anyhow;
 use std::fs::File;
 use std::io::Write;
 
-use crate::books::{Book, BookSeries, GetAllBooksResult, GetAllSeriesResult, AddSeriesResult};
+use crate::books::{AddSeriesResult, Book, BookSeries, GetAllBooksResult, GetAllSeriesResult};
 use crate::job_server::{GetAllJobsResult, Job};
 
 fn get_js_types() -> Vec<&'static str> {

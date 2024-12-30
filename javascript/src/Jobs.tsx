@@ -6,7 +6,7 @@ export function isJobProcessing(job: Job) {
 }
 
 export function isJobSuccessful(job: Job) {
-  return (job.status == "SUCCESSFUL");
+  return job.status == "SUCCESSFUL";
 }
 
 function formatTimestamp(ts: number) {
@@ -21,7 +21,7 @@ function formatTimestamp(ts: number) {
     .replace(/\.\d\d\dZ$/, "");
 }
 
-function JobRow({job}: {job: Job}) {
+function JobRow({ job }: { job: Job }) {
   let duration_ms =
     job.time_started && job.time_finished
       ? (job.time_finished - job.time_started) / 1000
@@ -62,7 +62,9 @@ export function Jobs({ jobs }: { jobs: GetAllJobsResult }) {
           </tr>
         </thead>
         <tbody>
-          {jobs.jobs.map((job, index) => <JobRow key={index} job={job} />)}
+          {jobs.jobs.map((job, index) => (
+            <JobRow key={index} job={job} />
+          ))}
         </tbody>
       </table>
     </>

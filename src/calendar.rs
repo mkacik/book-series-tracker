@@ -29,7 +29,8 @@ fn get_calendar() -> Calendar {
 fn get_event(book: Book) -> Event {
     let release_date =
         NaiveDate::from_ymd_opt(book.year.try_into().unwrap(), book.month, book.day).unwrap();
-    let first_seen_ts = DateTime::from_timestamp(book.time_first_seen, 0 /* nanoseconds */).unwrap();
+    let first_seen_ts =
+        DateTime::from_timestamp(book.time_first_seen, 0 /* nanoseconds */).unwrap();
 
     Event::new()
         .uid(&book.asin)

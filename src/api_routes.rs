@@ -5,7 +5,7 @@ use serde::Deserialize;
 use serde_json::to_string as to_json_string;
 use std::sync::Arc;
 
-use crate::books::{Book, BookSeries, AddSeriesResult};
+use crate::books::{AddSeriesResult, Book, BookSeries};
 use crate::common::validate_asin;
 use crate::database::Database;
 use crate::guards::LocalUser;
@@ -40,10 +40,7 @@ pub async fn jobs_get_controller(
     }
 }
 
-pub async fn enqueue_all(
-    db: &Database,
-    job_server: &JobServer
-) -> anyhow::Result<()> {
+pub async fn enqueue_all(db: &Database, job_server: &JobServer) -> anyhow::Result<()> {
     let all_series = BookSeries::fetch_all(db).await?;
     for series in all_series.series {
         job_server.add_job(series.asin).await?;
@@ -59,8 +56,8 @@ pub async fn jobs_post_controller(
     _local_user: LocalUser,
 ) -> Option<&'static str> {
     match enqueue_all(db, job_server).await {
-      Ok(_) => Some(""),
-      Err(_) => None,
+        Ok(_) => Some(""),
+        Err(_) => None,
     }
 }
 
@@ -70,8 +67,8 @@ pub async fn jobs_delete_controller(
     _local_user: LocalUser,
 ) -> Option<&'static str> {
     match job_server.delete_all_jobs().await {
-      Ok(_) => Some(""),
-      Err(_) => None,
+        Ok(_) => Some(""),
+        Err(_) => None,
     }
 }
 
@@ -86,28 +83,27 @@ pub async fn series_get_controller(db: &State<Arc<Database>>) -> Option<(Content
     }
 }
 
-async fn validate_and_add_series(
-  job_server: &JobServer,
-  asin: &str
-) -> AddSeriesResult {
-  let asin = match validate_asin(asin.trim()) {
-      Ok(asin) => asin,
-      Err(e) => return  AddSeriesResult {
-          job_id: None,
-          error: Some(format!("{}", e)),
-      },
-  };
+async fn validate_and_add_series(job_server: &JobServer, asin: &str) -> AddSeriesResult {
+    let asin = match validate_asin(asin.trim()) {
+        Ok(asin) => asin,
+        Err(e) => {
+            return AddSeriesResult {
+                job_id: None,
+                error: Some(format!("{}", e)),
+            }
+        }
+    };
 
-  match job_server.add_job(asin).await {
-      Ok(job_id) => AddSeriesResult {
-          job_id: Some(job_id),
-          error: None,
-      },
-      Err(e) => AddSeriesResult {
+    match job_server.add_job(asin).await {
+        Ok(job_id) => AddSeriesResult {
+            job_id: Some(job_id),
+            error: None,
+        },
+        Err(e) => AddSeriesResult {
             job_id: None,
-            error: Some(format!("{}", e))
-      },
-  }
+            error: Some(format!("{}", e)),
+        },
+    }
 }
 
 #[post("/series", format = "json", data = "<series>")]
@@ -119,8 +115,8 @@ pub async fn series_post_controller(
     let result = validate_and_add_series(job_server, &series.asin).await;
 
     match to_json_string(&result) {
-      Ok(json) => Some((ContentType::JSON, json)),
-      Err(_) => None,
+        Ok(json) => Some((ContentType::JSON, json)),
+        Err(_) => None,
     }
 }
 

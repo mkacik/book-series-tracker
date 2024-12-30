@@ -142,16 +142,17 @@ impl JobServer {
         let mut conn = self.database.acquire_db_conn().await?;
 
         let maybe_duplicate = sqlx::query!(
-            "SELECT id FROM jobs WHERE status = 'QUEUED' AND params = ?1", params
+            "SELECT id FROM jobs WHERE status = 'QUEUED' AND params = ?1",
+            params
         )
         .fetch_optional(&mut *conn)
         .await?;
         match maybe_duplicate {
-          Some(row) => {
-            let existing_job_id: i32 = row.id.try_into().unwrap();
-            return Ok(existing_job_id);
-          },
-          None => {}
+            Some(row) => {
+                let existing_job_id: i32 = row.id.try_into().unwrap();
+                return Ok(existing_job_id);
+            }
+            None => {}
         };
 
         let time_created = now();
@@ -183,8 +184,8 @@ impl JobServer {
         let mut conn = self.database.acquire_db_conn().await?;
 
         sqlx::query!("DELETE FROM jobs WHERE status IN ('FAILED', 'SUCCESSFUL')")
-          .execute(&mut *conn)
-          .await?;
+            .execute(&mut *conn)
+            .await?;
 
         Ok(())
     }
