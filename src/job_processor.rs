@@ -222,6 +222,7 @@ fn strip_tags(string: String) -> String {
 mod tests {
     use super::*;
     use tokio;
+    use std::env::current_dir;
 
     #[test]
     fn test_parse_date_err() {
@@ -293,7 +294,9 @@ mod tests {
             Err(err) => panic!("{}", err),
         };
 
-        let url = "file:///home/maria/Dropbox/dev/bookseriestracker/bstserver/www/testpage.html";
+        let cwd = current_dir().unwrap();
+
+        let url = format!("file:///{}/www/testpage.html", cwd.display());
         let series_asin = "TESTASIN";
 
         let maybe_result = scrape_url(&driver, url.to_string(), series_asin.to_string(), 0).await;
@@ -303,8 +306,8 @@ mod tests {
         assert!(maybe_result.is_ok());
         let result = maybe_result.unwrap();
 
-        assert_eq!(result.series_name, "Backyard Starship");
-        assert_eq!(result.series_asin, series_asin);
+        assert_eq!(result.series.name, "Backyard Starship");
+        assert_eq!(result.series.asin, series_asin);
         assert_eq!(result.books.len(), 2);
     }
 }

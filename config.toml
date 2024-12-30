@@ -1,0 +1,4 @@
+[env]
+RUST_BACKTRACE=1
+THIRTYFOUR_BROWSER=firefox
+DATABASE_URL=sqlite:db/bst.db
