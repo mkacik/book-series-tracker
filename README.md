@@ -34,7 +34,7 @@ $ cargo run generate-js
 
 Compile  {Type,Java}Script into bundle file (run from `./javascript/` dir):
 ```
-$ npm run install && npm run build
+$ npm install && npm run build
 ```
 ## Attributions
 
