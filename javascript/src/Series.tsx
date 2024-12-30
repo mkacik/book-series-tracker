@@ -22,7 +22,7 @@ function render_series(
   return (
     <li key={"series_" + series.asin}>
       {series.name}{" "}
-      <a href={"https://www.amazon.com/dp/" + series.asin}>[{series.asin}]</a>{" "}
+      <a href={"https://www.amazon.com/dp/" + series.asin}>{series.asin}</a>{" "}
       <button type="submit" onClick={deleteSeries}>
         delete
       </button>

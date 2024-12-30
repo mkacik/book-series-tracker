@@ -2,11 +2,6 @@ import React from "react";
 import { useState } from "react";
 import { Book, GetAllBooksResult } from "./generated/types";
 
-enum View {
-  List,
-  Calendar,
-}
-
 function formatReleaseDate(book: Book) {
   let year = book.year;
   let month = book.month.toString().padStart(2, "0");
@@ -41,17 +36,7 @@ function BooksAsList({ books }: { books: Array<Book> }) {
   );
 }
 
-function BooksAsCalendar({ books }: { books: Array<Book> }) {
-  return <span>Coming soon...</span>;
-}
-
 export function Books({ books }: { books: GetAllBooksResult }) {
-  const [view, setView] = useState<View>(View.List);
-
-  const toggleView = (): void => {
-    view == View.List ? setView(View.Calendar) : setView(View.List);
-  };
-
   if (books == null) {
     return null;
   }
@@ -61,16 +46,5 @@ export function Books({ books }: { books: GetAllBooksResult }) {
     return "No upcoming books yet.";
   }
 
-  return (
-    <>
-      <button onClick={() => toggleView()}>
-        view as {view == View.List ? "calendar" : "list"}
-      </button>
-      {view == View.List ? (
-        <BooksAsList books={bookList} />
-      ) : (
-        <BooksAsCalendar books={bookList} />
-      )}
-    </>
-  );
+  return <BooksAsList books={bookList} />;
 }
