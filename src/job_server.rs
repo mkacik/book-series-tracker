@@ -1,11 +1,10 @@
 use serde::Serialize;
 use std::sync::Arc;
 use tokio::sync::Semaphore;
-use tokio::time::{sleep, Duration};
 
 use bstmacros::GenJs;
 
-use crate::common::now;
+use crate::common::{now, sleep_seconds};
 use crate::database::Database;
 use crate::job_processor::scrape_and_save;
 
@@ -48,7 +47,7 @@ impl JobServer {
             loop {
                 match job_server.process_all().await {
                     Ok(_job_count) => {
-                        sleep(Duration::new(poll_interval, 0)).await;
+                        sleep_seconds(poll_interval).await;
                     }
                     Err(_) => {
                         return;
@@ -178,5 +177,15 @@ impl JobServer {
             .await?;
 
         Ok(GetAllJobsResult { jobs: jobs })
+    }
+
+    pub async fn delete_all_jobs(&self) -> anyhow::Result<()> {
+        let mut conn = self.database.acquire_db_conn().await?;
+
+        sqlx::query!("DELETE FROM jobs WHERE status IN ('FAILED', 'SUCCESSFUL')")
+          .execute(&mut *conn)
+          .await?;
+
+        Ok(())
     }
 }

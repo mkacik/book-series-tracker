@@ -1,6 +1,7 @@
 use anyhow;
 use regex::Regex;
 use std::time::{SystemTime, UNIX_EPOCH};
+use tokio::time::{sleep, Duration};
 
 pub fn now() -> i64 {
     SystemTime::now()
@@ -21,6 +22,10 @@ pub fn validate_asin(asin: &str) -> Result<String, anyhow::Error> {
             asin
         )),
     }
+}
+
+pub async fn sleep_seconds(seconds: u64) {
+    sleep(Duration::new(seconds, 0)).await;
 }
 
 #[cfg(test)]

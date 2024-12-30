@@ -40,22 +40,39 @@ pub async fn jobs_get_controller(
     }
 }
 
+pub async fn enqueue_all(
+    db: &Database,
+    job_server: &JobServer
+) -> anyhow::Result<()> {
+    let all_series = BookSeries::fetch_all(db).await?;
+    for series in all_series.series {
+        job_server.add_job(series.asin).await?;
+    }
+
+    Ok(())
+}
+
 #[post("/jobs")]
 pub async fn jobs_post_controller(
     db: &State<Arc<Database>>,
     job_server: &State<Arc<JobServer>>,
     _local_user: LocalUser,
 ) -> Option<&'static str> {
-    let all_series = match BookSeries::fetch_all(db).await {
-        Ok(get_all_series_result) => get_all_series_result.series,
-        Err(_) => return None,
-    };
-
-    for series in all_series {
-        let _ = job_server.add_job(series.asin).await;
+    match enqueue_all(db, job_server).await {
+      Ok(_) => Some(""),
+      Err(_) => None,
     }
+}
 
-    Some("")
+#[delete("/jobs")]
+pub async fn jobs_delete_controller(
+    job_server: &State<Arc<JobServer>>,
+    _local_user: LocalUser,
+) -> Option<&'static str> {
+    match job_server.delete_all_jobs().await {
+      Ok(_) => Some(""),
+      Err(_) => None,
+    }
 }
 
 #[get("/series")]

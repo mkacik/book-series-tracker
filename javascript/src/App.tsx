@@ -172,6 +172,22 @@ function App() {
     });
   };
 
+  const deleteAllJobs = (event: React.SyntheticEvent): void => {
+    event.preventDefault();
+      
+    if (confirm("Do you really want to delete all finished jobs from database?") != true) {
+      return;
+    }
+
+    fetch(BackendRoute.Jobs, {
+      method: "DELETE",
+    }).then((response) => {
+      if (response.ok) {
+        fetchAndSetJobs();
+      }
+    });
+  };
+
   const triggerScrapeForAllSeries = (event: React.SyntheticEvent): void => {
     event.preventDefault();
     if (confirm("Do you really want to trigger the scrape?") != true) {
@@ -210,6 +226,9 @@ function App() {
           <SectionHeader sectionName={"Jobs"} />
           <button type="submit" onClick={triggerScrapeForAllSeries}>
             Start scrape for all tracked series
+          </button>
+          <button type="submit" onClick={deleteAllJobs}>
+            Delete job history from database
           </button>
           <Jobs jobs={jobs} />
         </Page>

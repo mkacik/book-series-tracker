@@ -39,6 +39,18 @@ enum Command {
     GenerateJs {},
 }
 
+fn spawn_thread_for_daily_scrape(
+  database: Arc<Database>,
+  job_server: Arc<JobServer>,
+) {
+  tokio::spawn(async move {
+    loop {
+      common::sleep_seconds(86400).await;
+      let _ = api_routes::enqueue_all(&database, &job_server).await;
+    }
+  });
+}
+
 #[rocket::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
@@ -46,8 +58,9 @@ async fn main() -> anyhow::Result<()> {
     match &args.command {
         Command::Server { poll_interval_s } => {
             let database = Arc::new(Database::init().await);
-
             let job_server = JobServer::init(database.clone(), *poll_interval_s);
+
+            spawn_thread_for_daily_scrape(database.clone(), job_server.clone());
 
             let _rocket = rocket::build()
                 .mount(
@@ -63,6 +76,7 @@ async fn main() -> anyhow::Result<()> {
                     "/api",
                     routes![
                         api_routes::books_get_controller,
+                        api_routes::jobs_delete_controller,
                         api_routes::jobs_get_controller,
                         api_routes::jobs_post_controller,
                         api_routes::series_delete_controller,
