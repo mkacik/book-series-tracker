@@ -142,6 +142,19 @@ impl JobServer {
     pub async fn add_job(&self, params: String) -> anyhow::Result<i32> {
         let mut conn = self.database.acquire_db_conn().await?;
 
+        let maybe_duplicate = sqlx::query!(
+            "SELECT id FROM jobs WHERE status = 'QUEUED' AND params = ?1", params
+        )
+        .fetch_optional(&mut *conn)
+        .await?;
+        match maybe_duplicate {
+          Some(row) => {
+            let existing_job_id: i32 = row.id.try_into().unwrap();
+            return Ok(existing_job_id);
+          },
+          None => {}
+        };
+
         let time_created = now();
         let result = sqlx::query_scalar!(
             "INSERT INTO jobs (params, status, time_created)
