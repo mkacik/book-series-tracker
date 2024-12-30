@@ -9,16 +9,23 @@ export function isJobSuccessful(job: Job) {
   return job.status == "SUCCESSFUL";
 }
 
-function formatTimestamp(ts: number) {
+function pad(num: number): string {
+  return num.toString().padStart(2, "0");
+}
+
+function formatTimestamp(ts: number): string {
   if (ts == null) {
     return "";
   }
 
   let date = new Date(ts);
-  return date
-    .toISOString()
-    .replace("T", " ")
-    .replace(/\.\d\d\dZ$/, "");
+
+  let year = date.getFullYear();
+  let month = pad(date.getMonth() + 1);
+  let day = pad(date.getDate());
+  let time = date.toTimeString().replace(/ .*/, "")
+
+  return `${year}-${month}-${day} ${time}`;
 }
 
 function JobRow({ job }: { job: Job }) {
