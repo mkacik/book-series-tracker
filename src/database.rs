@@ -1,11 +1,36 @@
 use sqlx::pool::PoolConnection;
 use sqlx::sqlite::SqlitePool;
 use sqlx::Sqlite;
+use std::env;
 
-pub async fn get_db_pool() -> SqlitePool {
-    match SqlitePool::connect("db/bst.db").await {
+const DATABASE_URL_ENV_VAR: &str = "DATABASE_URL";
+
+fn get_fallback_database_url() -> String {
+    let current_dir = env::current_dir().expect("Cannot read current exectuable path, aborting!");
+
+    format!("sqlite:{}/db/bst.db", current_dir.display())
+}
+
+async fn get_db_pool() -> SqlitePool {
+    let database_url = match env::var(DATABASE_URL_ENV_VAR) {
+        Ok(value) => value,
+        Err(_) => {
+            let fallback_database_url = get_fallback_database_url();
+            println!(
+                "{} env variable unset, falling back to {}.",
+                DATABASE_URL_ENV_VAR, fallback_database_url,
+            );
+
+            fallback_database_url
+        }
+    };
+
+    match SqlitePool::connect(&database_url).await {
         Ok(pool) => pool,
-        Err(_) => panic!("Could not create db connection pool, aborting!"),
+        Err(_) => panic!(
+            "Could not create db connection to {}, aborting!",
+            database_url
+        ),
     }
 }
 

@@ -9,16 +9,20 @@ use std::sync::Arc;
 mod api_routes;
 mod books;
 mod calendar;
+mod credentials;
+mod crypto;
 mod common;
 mod database;
-mod guards;
 mod job_processor;
 mod job_server;
 mod js;
+mod login;
+mod user;
 mod routes;
 
 use crate::database::Database;
 use crate::job_server::JobServer;
+use crate::crypto::init_crypto;
 
 #[derive(Parser)]
 #[command(about)]
@@ -50,8 +54,11 @@ fn spawn_thread_for_daily_scrape(database: Arc<Database>, job_server: Arc<JobSer
 
 #[rocket::main]
 async fn main() -> anyhow::Result<()> {
-    let args = Args::parse();
+    if init_crypto().is_err() {
+        return Err(anyhow::anyhow!("Error initializing crypto, aborting"));
+    }
 
+    let args = Args::parse();
     match &args.command {
         Command::Server { poll_interval_s } => {
             let database = Arc::new(Database::init().await);
@@ -67,6 +74,9 @@ async fn main() -> anyhow::Result<()> {
                         routes::jobs_controller,
                         routes::calendar_controller,
                         routes::favicon_controller,
+                        login::login_page,
+                        login::login,
+                        login::logout,
                     ],
                 )
                 .mount(

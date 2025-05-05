@@ -8,7 +8,7 @@ use std::sync::Arc;
 use crate::books::{AddSeriesResult, Book, BookSeries};
 use crate::common::validate_asin;
 use crate::database::Database;
-use crate::guards::LocalUser;
+use crate::user::User;
 use crate::job_server::JobServer;
 
 #[derive(Deserialize, Debug)]
@@ -53,7 +53,7 @@ pub async fn enqueue_all(db: &Database, job_server: &JobServer) -> anyhow::Resul
 pub async fn jobs_post_controller(
     db: &State<Arc<Database>>,
     job_server: &State<Arc<JobServer>>,
-    _local_user: LocalUser,
+    _local_user: &User,
 ) -> Option<&'static str> {
     match enqueue_all(db, job_server).await {
         Ok(_) => Some(""),
@@ -64,7 +64,7 @@ pub async fn jobs_post_controller(
 #[delete("/jobs")]
 pub async fn jobs_delete_controller(
     job_server: &State<Arc<JobServer>>,
-    _local_user: LocalUser,
+    _local_user: &User,
 ) -> Option<&'static str> {
     match job_server.delete_all_jobs().await {
         Ok(_) => Some(""),
@@ -110,7 +110,7 @@ async fn validate_and_add_series(job_server: &JobServer, asin: &str) -> AddSerie
 pub async fn series_post_controller(
     job_server: &State<Arc<JobServer>>,
     series: Json<BookSeriesRequest>,
-    _local_user: LocalUser,
+    _local_user: &User,
 ) -> Option<(ContentType, String)> {
     let result = validate_and_add_series(job_server, &series.asin).await;
 
@@ -124,7 +124,7 @@ pub async fn series_post_controller(
 pub async fn series_delete_controller(
     db: &State<Arc<Database>>,
     series: Json<BookSeriesRequest>,
-    _local_user: LocalUser,
+    _local_user: &User,
 ) -> Option<&'static str> {
     let asin = match validate_asin(series.asin.trim()) {
         Ok(asin) => asin,

@@ -26,8 +26,7 @@ CREATE TABLE jobs(
   time_finished INT
 );
 
-create TABLE calendar_url_keys(
-  url_key TEXT NOT NULL UNIQUE PRIMARY KEY,
-  time_generated INT,
-  active BOOLEAN
+CREATE TABLE credentials (
+  username TEXT PRIMARY KEY NOT NULL UNIQUE,
+  pwhash TEXT NOT NULL
 );
