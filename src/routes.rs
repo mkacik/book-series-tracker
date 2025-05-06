@@ -21,9 +21,9 @@ pub async fn jobs_controller() -> Result<NamedFile, std::io::Error> {
     index().await
 }
 
-#[get("/favicon.ico")]
-pub async fn favicon_controller() -> Result<NamedFile, std::io::Error> {
-    NamedFile::open("www/favicon.ico").await
+#[get("/login")]
+pub async fn login_controller() -> Result<NamedFile, std::io::Error> {
+    NamedFile::open("www/login.html").await
 }
 
 #[get("/calendar")]

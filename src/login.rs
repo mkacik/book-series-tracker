@@ -1,5 +1,4 @@
 use rocket::form::{Form, FromForm};
-use rocket::fs::NamedFile;
 use rocket::http::{Cookie, CookieJar};
 use rocket::response::Redirect;
 use rocket::{post, State};
@@ -13,11 +12,6 @@ use crate::database::Database;
 pub struct LoginForm {
     username: String,
     password: String,
-}
-
-#[get("/login")]
-pub async fn login_page() -> Result<NamedFile, std::io::Error> {
-    NamedFile::open("www/login.html").await
 }
 
 #[post("/login", data = "<form>")]
