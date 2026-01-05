@@ -1,29 +1,29 @@
-use rocket::fs::NamedFile;
 use rocket::http::ContentType;
 use rocket::State;
+use rocket_dyn_templates::{context, Template};
 use std::sync::Arc;
 
 use crate::books::Book;
 use crate::calendar::get_calendar_string;
 use crate::database::Database;
 
-async fn index() -> Result<NamedFile, std::io::Error> {
-    NamedFile::open("www/index.html").await
+async fn index() -> Template {
+    Template::render("index", context! {})
 }
 
 #[get("/")]
-pub async fn index_controller() -> Result<NamedFile, std::io::Error> {
+pub async fn index_controller() -> Template {
     index().await
 }
 
 #[get("/jobs")]
-pub async fn jobs_controller() -> Result<NamedFile, std::io::Error> {
+pub async fn jobs_controller() -> Template {
     index().await
 }
 
 #[get("/login")]
-pub async fn login_controller() -> Result<NamedFile, std::io::Error> {
-    NamedFile::open("www/login.html").await
+pub async fn login_controller() -> Template {
+    Template::render("login", context! {})
 }
 
 #[get("/calendar")]

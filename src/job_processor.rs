@@ -221,8 +221,8 @@ fn strip_tags(string: String) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tokio;
     use std::env::current_dir;
+    use tokio;
 
     #[test]
     fn test_parse_date_err() {

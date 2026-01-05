@@ -1,0 +1,21 @@
+{% extends "layout" %}
+
+{% block css %}
+<link rel="stylesheet" href="static/login.css" />
+{% endblock css %}
+
+{% block body %}
+<div class="login-container">
+  <form action="login" method="post">
+    <div class="login-row">
+      <label for="username">Username</label>
+      <input name="username" type="text"></input>
+    </div>
+    <div class="login-row">
+      <label for="password">Password</label>
+      <input name="password" type="password"></input>
+    </div>
+    <input class="login-submit" type="submit" value="Login"></input>
+  </form>
+</div>
+{% endblock body %}

@@ -1,0 +1,14 @@
+{% extends "layout" %}
+
+{% block css %}
+<link rel="stylesheet" href="static/style.css" />
+{% endblock css %}
+
+{% block body %}
+<main id="root">
+</main>
+{% endblock body %}
+
+{% block script %}
+<script src="/static/bundle.js"></script>
+{% endblock script %}

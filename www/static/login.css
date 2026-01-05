@@ -1,0 +1,39 @@
+:root {
+  --font-family: Ubuntu, Roboto, Helvetica, sans-serif;
+}
+
+.login-container {
+  font-family: var(--font-family);
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 100svh;
+
+  > form {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .login-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    > label {
+      width: 5rem;
+    }
+
+    > input {
+      width: 15rem;
+    }
+  }
+
+  .login-submit {
+    font-family: var(--font-family);
+    font-size: 1rem;
+
+    justify-self: end;
+  }
+}

@@ -3,26 +3,27 @@ extern crate rocket;
 
 use clap::{Parser, Subcommand};
 use rocket::fs::{relative, FileServer};
+use rocket_dyn_templates::Template;
 use std::env;
 use std::sync::Arc;
 
 mod api_routes;
 mod books;
 mod calendar;
+mod common;
 mod credentials;
 mod crypto;
-mod common;
 mod database;
 mod job_processor;
 mod job_server;
 mod js;
 mod login;
-mod user;
 mod routes;
+mod user;
 
+use crate::crypto::init_crypto;
 use crate::database::Database;
 use crate::job_server::JobServer;
-use crate::crypto::init_crypto;
 
 #[derive(Parser)]
 #[command(about)]
@@ -91,6 +92,7 @@ async fn main() -> anyhow::Result<()> {
                     ],
                 )
                 .mount("/static", FileServer::from(relative!("www/static")))
+                .attach(Template::fairing())
                 .manage(database)
                 .manage(job_server)
                 .launch()

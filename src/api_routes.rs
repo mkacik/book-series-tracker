@@ -8,8 +8,8 @@ use std::sync::Arc;
 use crate::books::{AddSeriesResult, Book, BookSeries};
 use crate::common::validate_asin;
 use crate::database::Database;
-use crate::user::User;
 use crate::job_server::JobServer;
+use crate::user::User;
 
 #[derive(Deserialize, Debug)]
 pub struct BookSeriesRequest {
