@@ -1,26 +1,30 @@
 use serde::Serialize;
 use std::sync::Arc;
 use tokio::sync::Semaphore;
-
-use bstmacros::GenJs;
+use ts_rs::TS;
 
 use crate::common::{now, sleep_seconds};
 use crate::database::Database;
 use crate::job_processor::scrape_and_save;
 
-#[derive(sqlx::FromRow, Serialize, GenJs, Clone, Debug)]
+#[derive(sqlx::FromRow, Serialize, TS, Clone, Debug)]
+#[ts(export_to = "types.ts")]
 pub struct Job {
     pub id: i32,
     pub params: String,
     pub status: String,
     pub errors: Option<String>,
 
+    #[ts(as = "i32")]
     pub time_created: i64,
+    #[ts(as = "Option<i32>")]
     pub time_started: Option<i64>,
+    #[ts(as = "Option<i32>")]
     pub time_finished: Option<i64>,
 }
 
-#[derive(Serialize, GenJs, Clone, Debug)]
+#[derive(Serialize, TS, Clone, Debug)]
+#[ts(export_to = "types.ts")]
 pub struct GetAllJobsResult {
     pub jobs: Vec<Job>,
 }

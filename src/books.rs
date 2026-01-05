@@ -1,17 +1,18 @@
 use serde::Serialize;
+use ts_rs::TS;
 
 use crate::database::Database;
 
-use bstmacros::GenJs;
-
-#[derive(sqlx::FromRow, Serialize, GenJs, Debug)]
+#[derive(sqlx::FromRow, Serialize, TS, Debug)]
+#[ts(export_to = "types.ts")]
 pub struct BookSeries {
     pub asin: String,
     pub name: String,
     pub time_first_seen: i64,
 }
 
-#[derive(sqlx::FromRow, Serialize, GenJs, Debug)]
+#[derive(sqlx::FromRow, Serialize, TS, Debug)]
+#[ts(export_to = "types.ts")]
 pub struct Book {
     pub asin: String,
     pub series_asin: String,
@@ -21,20 +22,24 @@ pub struct Book {
     pub day: u32,
     pub month: u32,
     pub year: u32,
+    #[ts(as = "i32")]
     pub time_first_seen: i64,
 }
 
-#[derive(Serialize, GenJs, Debug)]
+#[derive(Serialize, TS, Debug)]
+#[ts(export_to = "types.ts")]
 pub struct GetAllSeriesResult {
     pub series: Vec<BookSeries>,
 }
 
-#[derive(Serialize, GenJs, Debug)]
+#[derive(Serialize, TS, Debug)]
+#[ts(export_to = "types.ts")]
 pub struct GetAllBooksResult {
     pub books: Vec<Book>,
 }
 
-#[derive(Serialize, GenJs, Debug)]
+#[derive(Serialize, TS, Debug)]
+#[ts(export_to = "types.ts")]
 pub struct AddSeriesResult {
     pub job_id: Option<i32>,
     pub error: Option<String>,
@@ -102,13 +107,13 @@ impl BookSeries {
     pub async fn delete_by_asin(db: &Database, asin: &str) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
 
-        sqlx::query!("DELETE FROM series WHERE asin = ?1", asin)
-            .execute(&mut *conn)
-            .await?;
-
         // Yea, I know it's not really clean to do it from this class, and I'm not feeling
         // creative enough to restructure this again :D
         sqlx::query!("DELETE FROM books WHERE series_asin = ?1", asin)
+            .execute(&mut *conn)
+            .await?;
+
+        sqlx::query!("DELETE FROM series WHERE asin = ?1", asin)
             .execute(&mut *conn)
             .await?;
 

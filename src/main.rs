@@ -14,9 +14,9 @@ mod common;
 mod credentials;
 mod crypto;
 mod database;
+mod genjs;
 mod job_processor;
 mod job_server;
-mod js;
 mod login;
 mod routes;
 mod user;
@@ -40,8 +40,8 @@ enum Command {
         #[clap(long, default_value_t = 30)]
         poll_interval_s: u64,
     },
-    /// Generate JavaScript type file from structs annotated with GenJs
-    GenerateJs {},
+    /// Generate TypeScript bindings for structs annottated with TS macros
+    Genjs {},
 }
 
 fn spawn_thread_for_daily_scrape(database: Arc<Database>, job_server: Arc<JobServer>) {
@@ -98,8 +98,8 @@ async fn main() -> anyhow::Result<()> {
                 .launch()
                 .await?;
         }
-        Command::GenerateJs {} => {
-            js::export_js_types()?;
+        Command::Genjs {} => {
+            genjs::export_js_types();
         }
     };
 

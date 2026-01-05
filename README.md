@@ -29,10 +29,10 @@ $ ROCKET_LOG_LEVEL=normal ROCKET_ADDRESS=0.0.0.0 cargo run server
 
 Synchronize the backend Rust types with TypeScript types used in UI:
 ```
-$ cargo run generate-js
+$ cargo run genjs
 ```
 
-Compile  {Type,Java}Script into bundle file (run from `./javascript/` dir):
+Compile  {Type,Java}Script into bundle file (run from `./js` dir):
 ```
 $ npm install && npm run build
 ```
