@@ -38,4 +38,4 @@ $ npm install && npm run build
 ```
 ## Attributions
 
-Cute books favicon/logo was made by <a href="https://www.flaticon.com/authors/popo2021">popo2021</a> from <a href="https://www.flaticon.com/">www.flaticon.com</a>.
+Icons/glyphs/fonts from https://fonts.google.com/

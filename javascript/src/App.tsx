@@ -11,7 +11,6 @@ import { SectionHeader } from "./common";
 import { Books } from "./Books";
 import { Series } from "./Series";
 import { Jobs, isJobSuccessful, isJobProcessing } from "./Jobs";
-import logoImg from "./images/logo.png";
 
 enum BackendRoute {
   Jobs = "/api/jobs",
@@ -25,7 +24,6 @@ enum Route {
 }
 
 function SiteHeader() {
-  // <img src={logoImg} width="200" height="auto" alt="Logo" />
   return (
     <header>
       <hgroup>
