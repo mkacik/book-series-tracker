@@ -18,12 +18,14 @@ mod genjs;
 mod job_processor;
 mod job_server;
 mod login;
+mod passwords;
 mod routes;
 mod user;
 
 use crate::crypto::init_crypto;
 use crate::database::Database;
 use crate::job_server::JobServer;
+use crate::passwords::Command as PasswordsCommand;
 
 #[derive(Parser)]
 #[command(about)]
@@ -34,14 +36,21 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Generate TypeScript bindings for structs annottated with TS macros
+    Genjs {},
+
+    /// Manage users and passwords
+    Passwords {
+        #[command(subcommand)]
+        command: PasswordsCommand,
+    },
+
     /// Starts the server
     Server {
         /// how frequently server should wake up to check for jobs to process
         #[clap(long, default_value_t = 30)]
         poll_interval_s: u64,
     },
-    /// Generate TypeScript bindings for structs annottated with TS macros
-    Genjs {},
 }
 
 fn spawn_thread_for_daily_scrape(database: Arc<Database>, job_server: Arc<JobServer>) {
@@ -60,10 +69,19 @@ async fn main() -> anyhow::Result<()> {
     }
 
     let args = Args::parse();
-    match &args.command {
+    match args.command {
+        Command::Genjs {} => {
+            genjs::export_js_types();
+        }
+
+        Command::Passwords { command } => {
+            let database = Database::init().await;
+            passwords::manage_passwords(database, command).await;
+        }
+
         Command::Server { poll_interval_s } => {
             let database = Arc::new(Database::init().await);
-            let job_server = JobServer::init(database.clone(), *poll_interval_s);
+            let job_server = JobServer::init(database.clone(), poll_interval_s);
 
             spawn_thread_for_daily_scrape(database.clone(), job_server.clone());
 
@@ -97,9 +115,6 @@ async fn main() -> anyhow::Result<()> {
                 .manage(job_server)
                 .launch()
                 .await?;
-        }
-        Command::Genjs {} => {
-            genjs::export_js_types();
         }
     };
 

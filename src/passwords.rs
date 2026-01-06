@@ -1,34 +1,22 @@
-use clap::{Parser, Subcommand};
+use clap::Subcommand;
 use std::io;
 
-use bstserver::credentials::Credentials;
-use bstserver::crypto::{hash_password, init_crypto, verify_password};
-use bstserver::database::Database;
+use crate::credentials::Credentials;
+use crate::crypto::{hash_password, verify_password};
+use crate::database::Database;
 
-#[derive(Parser, Debug)]
-struct Args {
-    #[clap(subcommand)]
-    command: Command,
-}
-
-#[derive(Debug, Subcommand)]
-enum Command {
+#[derive(Subcommand)]
+pub enum Command {
+    /// Set new credential for a user, creating user if necessary
     Set { username: String },
+    /// Removes username from database
     Remove { username: String },
+    /// Lists users with active credentials
     ListUsernames,
 }
 
-#[tokio::main]
-async fn main() {
-    if init_crypto().is_err() {
-        println!("Error initializing crypto, aborting");
-        return;
-    }
-
-    let db = Database::init().await;
-
-    let args = Args::parse();
-    let _ = match args.command {
+pub async fn manage_passwords(db: Database, command: Command) {
+    match command {
         Command::Set { username } => {
             set_password(db, username).await;
         }
