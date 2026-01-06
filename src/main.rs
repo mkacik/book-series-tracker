@@ -9,7 +9,6 @@ use std::sync::Arc;
 
 mod api_routes;
 mod books;
-mod calendar;
 mod common;
 mod credentials;
 mod crypto;
@@ -91,7 +90,6 @@ async fn main() -> anyhow::Result<()> {
                     routes![
                         routes::index_controller,
                         routes::jobs_controller,
-                        routes::calendar_controller,
                         routes::login_controller,
                         login::login,
                         login::logout,

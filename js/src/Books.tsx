@@ -46,15 +46,5 @@ export function Books({ books }: { books: GetAllBooksResult }) {
     return "No upcoming books yet.";
   }
 
-  let calendarLink = `${window.location.origin}/calendar`;
-
-  return <>
-    <button onClick={() => { location.href = calendarLink }}>
-      Open calendar ICS file
-    </button>
-    <button onClick={() => navigator.clipboard.writeText(calendarLink)}>
-      Save subscription calendar link to clipboard
-    </button>
-    <BooksAsList books={bookList} />
-  </>
+  return <BooksAsList books={bookList} />;
 }
