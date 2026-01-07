@@ -15,7 +15,7 @@ function BookCard({ book }: { book: Book }) {
       <h3>
         {formatReleaseDate(book)}: {book.title}
       </h3>
-      <span>autor: {book.author}</span>
+      <span>by {book.author}</span>
       <span>
         link:{" "}
         <a href={"https://www.amazon.com/gp/product/" + book.asin}>
