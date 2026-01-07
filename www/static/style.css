@@ -9,3 +9,11 @@ body {
 button {
   font-family: var(--font-family);
 }
+
+.header {
+  display: flex;
+}
+
+.header-filler {
+  flex-grow: 5;
+}

@@ -1,11 +1,13 @@
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::State;
+use serde::Serialize;
 use std::sync::Arc;
 
 use crate::credentials::Credentials;
 use crate::database::Database;
 
+#[derive(Serialize)]
 pub struct User {
     pub username: String,
 }

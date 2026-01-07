@@ -98,6 +98,7 @@ async fn main() -> anyhow::Result<()> {
                 .mount(
                     "/api",
                     routes![
+                        api_routes::me,
                         api_routes::books_get_controller,
                         api_routes::jobs_delete_controller,
                         api_routes::jobs_get_controller,

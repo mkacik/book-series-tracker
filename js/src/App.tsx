@@ -13,6 +13,7 @@ import { Series } from "./Series";
 import { Jobs, isJobSuccessful, isJobProcessing } from "./Jobs";
 
 enum BackendRoute {
+  User = "/api/me",
   Jobs = "/api/jobs",
   Books = "/api/books",
   Series = "/api/series",
@@ -25,11 +26,41 @@ enum Route {
 
 function SiteHeader() {
   return (
-    <header>
-      <hgroup>
-        <h1>Book Series Tracker</h1>
-      </hgroup>
+    <header className="header">
+      <h1>Book Series Tracker</h1>
+      <span className="header-filler" />
+      <AccountSection />
     </header>
+  );
+}
+
+function AccountSection() {
+  const [username, setUsername] = useState<string | null>(null);
+
+  const fetchUsername = () => {
+    fetch(BackendRoute.User)
+      .then((response) => response.json())
+      .then((result) => {
+        const user = result as { username: string };
+        setUsername(user.username);
+      });
+  };
+
+  useEffect(() => {
+    fetchUsername();
+  }, []);
+
+  if (username === null) {
+    return (
+      <span>
+        <a href="login">Login</a>
+      </span>
+    );
+  }
+  return (
+    <span>
+      Hi {username}! <a href="logout">Logout</a>
+    </span>
   );
 }
 

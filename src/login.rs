@@ -35,7 +35,7 @@ pub async fn login(
     Redirect::to("/")
 }
 
-#[post("/logout")]
+#[get("/logout")]
 pub async fn logout(cookies: &CookieJar<'_>) -> Redirect {
     cookies.remove_private("user");
 

@@ -11,9 +11,15 @@ use crate::database::Database;
 use crate::job_server::JobServer;
 use crate::user::User;
 
-#[derive(Deserialize, Debug)]
-pub struct BookSeriesRequest {
-    asin: String,
+#[get("/me")]
+pub async fn me(user: Option<&User>) -> Option<(ContentType, String)> {
+    match user {
+        Some(user) => match to_json_string(&user) {
+            Ok(json) => Some((ContentType::JSON, json)),
+            Err(_) => None,
+        },
+        None => None,
+    }
 }
 
 #[get("/books")]
@@ -53,7 +59,7 @@ pub async fn enqueue_all(db: &Database, job_server: &JobServer) -> anyhow::Resul
 pub async fn jobs_post_controller(
     db: &State<Arc<Database>>,
     job_server: &State<Arc<JobServer>>,
-    _local_user: &User,
+    _user: &User,
 ) -> Option<&'static str> {
     match enqueue_all(db, job_server).await {
         Ok(_) => Some(""),
@@ -64,7 +70,7 @@ pub async fn jobs_post_controller(
 #[delete("/jobs")]
 pub async fn jobs_delete_controller(
     job_server: &State<Arc<JobServer>>,
-    _local_user: &User,
+    _user: &User,
 ) -> Option<&'static str> {
     match job_server.delete_all_jobs().await {
         Ok(_) => Some(""),
@@ -106,11 +112,16 @@ async fn validate_and_add_series(job_server: &JobServer, asin: &str) -> AddSerie
     }
 }
 
+#[derive(Deserialize, Debug)]
+pub struct BookSeriesRequest {
+    asin: String,
+}
+
 #[post("/series", format = "json", data = "<series>")]
 pub async fn series_post_controller(
     job_server: &State<Arc<JobServer>>,
     series: Json<BookSeriesRequest>,
-    _local_user: &User,
+    _user: &User,
 ) -> Option<(ContentType, String)> {
     let result = validate_and_add_series(job_server, &series.asin).await;
 
@@ -124,7 +135,7 @@ pub async fn series_post_controller(
 pub async fn series_delete_controller(
     db: &State<Arc<Database>>,
     series: Json<BookSeriesRequest>,
-    _local_user: &User,
+    _user: &User,
 ) -> Option<&'static str> {
     let asin = match validate_asin(series.asin.trim()) {
         Ok(asin) => asin,
