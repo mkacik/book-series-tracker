@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import {
   AddSeriesResult,
+  Book,
   GetAllBooksResult,
   GetAllSeriesResult,
   GetAllJobsResult,
@@ -92,7 +93,7 @@ function App() {
   const [route, setRoute] = useState<Route>(getRouteFromURL());
 
   // backend data
-  const [books, setBooks] = useState<GetAllBooksResult>(null);
+  const [books, setBooks] = useState<Array<Book>>([]);
   const [series, setSeries] = useState<GetAllSeriesResult>(null);
   const [jobs, setJobs] = useState<GetAllJobsResult>(null);
 
@@ -106,9 +107,14 @@ function App() {
     fetch(BackendRoute.Books)
       .then((response) => response.json())
       .then((result) => {
-        setBooks(result as GetAllBooksResult);
+        const booksResult = result as GetAllBooksResult;
+        setBooks(booksResult.books);
       });
   };
+
+  useEffect(() => {
+    fetchAndSetBooks();
+  }, []);
 
   const fetchAndSetSeries = () => {
     fetch(BackendRoute.Series)
@@ -139,10 +145,6 @@ function App() {
         setJobs(newJobs);
       });
   };
-
-  if (books == null) {
-    fetchAndSetBooks();
-  }
 
   if (series == null) {
     fetchAndSetSeries();

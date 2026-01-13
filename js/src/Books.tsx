@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { Book, GetAllBooksResult } from "./generated/types";
+import { Book } from "./generated/types";
 
 function formatReleaseDate(book: Book) {
   let year = book.year;
@@ -26,7 +26,11 @@ function BookCard({ book }: { book: Book }) {
   );
 }
 
-function BooksAsList({ books }: { books: Array<Book> }) {
+export function Books({ books }: { books: Array<Book> }) {
+  if (books.length == 0) {
+    return "No upcoming books yet.";
+  }
+
   return (
     <>
       {books.map((book, index) => (
@@ -34,17 +38,4 @@ function BooksAsList({ books }: { books: Array<Book> }) {
       ))}
     </>
   );
-}
-
-export function Books({ books }: { books: GetAllBooksResult }) {
-  if (books == null) {
-    return null;
-  }
-
-  let bookList = books.books;
-  if (bookList.length == 0) {
-    return "No upcoming books yet.";
-  }
-
-  return <BooksAsList books={bookList} />;
 }
