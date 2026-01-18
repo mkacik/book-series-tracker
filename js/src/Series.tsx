@@ -1,5 +1,5 @@
 import React from "react";
-import { BookSeries, GetAllSeriesResult } from "./generated/types";
+import { BookSeries } from "./generated/types";
 
 type DeleteSeriesHandler = (asin: string) => void;
 type AddSeriesHandler = (asin: string) => void;
@@ -31,21 +31,17 @@ function render_series(
 }
 
 function render_all_series(
-  result: GetAllSeriesResult,
+  all_series: Array<BookSeries>,
   deleteSeriesHandler: DeleteSeriesHandler,
 ) {
-  if (result == null) {
-    return null;
-  }
-
-  if (result.series.length == 0) {
+  if (all_series.length == 0) {
     return "No series tracked yet. Add series ASIN to start";
   }
 
   return (
     <ul>
-      {result.series.map((series, index) =>
-        render_series(series, deleteSeriesHandler),
+      {all_series.map((item, index) =>
+        render_series(item, deleteSeriesHandler),
       )}
     </ul>
   );
@@ -56,7 +52,7 @@ export function Series({
   addSeriesHandler,
   deleteSeriesHandler,
 }: {
-  series: GetAllSeriesResult;
+  series: Array<BookSeries>;
   addSeriesHandler: AddSeriesHandler;
   deleteSeriesHandler: DeleteSeriesHandler;
 }) {
