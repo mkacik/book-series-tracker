@@ -88,9 +88,9 @@ async fn main() -> anyhow::Result<()> {
                 .mount(
                     "/",
                     routes![
-                        routes::index_controller,
-                        routes::jobs_controller,
-                        routes::login_controller,
+                        routes::index,
+                        routes::catchall,
+                        routes::login,
                         login::login,
                         login::logout,
                     ],

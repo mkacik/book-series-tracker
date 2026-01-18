@@ -14,18 +14,13 @@ import { SectionHeader } from "./common";
 import { Books } from "./Books";
 import { Series } from "./Series";
 import { Jobs, isJobProcessing } from "./Jobs";
-
-enum BackendRoute {
-  User = "/api/me",
-  Jobs = "/api/jobs",
-  Books = "/api/books",
-  Series = "/api/series",
-}
-
-enum Route {
-  Default = "/",
-  Jobs = "/jobs",
-}
+import {
+  BackendRoute,
+  Route,
+  RouteLink,
+  RouteNotFound,
+  usePathname,
+} from "./Navigation";
 
 function SiteHeader({ children }: { children: React.ReactNode }) {
   return (
@@ -52,38 +47,9 @@ function AccountSection({ user }: { user: string | null }) {
   );
 }
 
-function Page({
-  show,
-  children,
-}: {
-  show: boolean;
-  children?: React.ReactNode;
-}) {
-  return <>{show ? children : null}</>;
-}
-
-function getRouteFromURL(): Route {
-  let path = window.location.pathname;
-
-  if (path == Route.Jobs) {
-    return Route.Jobs;
-  }
-  if (path != Route.Default) {
-    let url = new URL(Route.Default, window.location.origin);
-    history.replaceState({}, "", url);
-  }
-  return Route.Default;
-}
-
 function App() {
   // UI state
-  const [route, setRoute] = useState<Route>(getRouteFromURL());
-
-  const setActiveRoute = (newRoute: Route): void => {
-    let url = new URL(newRoute, window.location.origin);
-    history.pushState({}, "", url);
-    setRoute(newRoute);
-  };
+  const route = usePathname();
 
   // logged-in user
   const [user, setUser] = useState<string | null>(null);
@@ -241,38 +207,50 @@ function App() {
     });
   };
 
+  const getPageContent = () => {
+    switch (route) {
+      case Route.Books:
+        return (
+          <>
+            <SectionHeader sectionName={"Upcoming Books"} />
+            <Books books={books} />
+            <SectionHeader sectionName={"Tracked Series"} />
+            <Series
+              series={series}
+              addSeriesHandler={addSeries}
+              deleteSeriesHandler={deleteSeries}
+            />
+          </>
+        );
+      case Route.Jobs:
+        return (
+          <>
+            <SectionHeader sectionName={"Jobs"} />
+            <button type="submit" onClick={triggerScrapeForAllSeries}>
+              Start scrape for all tracked series
+            </button>
+            <button type="submit" onClick={deleteAllJobs}>
+              Delete job history from database
+            </button>
+            <Jobs jobs={jobs} />
+          </>
+        );
+      default:
+        return <RouteNotFound />;
+    }
+  };
+
   return (
     <div>
       <SiteHeader>
         <AccountSection user={user} />
       </SiteHeader>
       <div>
-        <button onClick={() => setActiveRoute(Route.Default)}>Books</button>
-        <button onClick={() => setActiveRoute(Route.Jobs)}>Jobs</button>
+        <RouteLink route={Route.Books}>Books</RouteLink>
+        <RouteLink route={Route.Jobs}>Jobs</RouteLink>
       </div>
       <hr />
-      <div>
-        <Page show={route == Route.Default}>
-          <SectionHeader sectionName={"Upcoming Books"} />
-          <Books books={books} />
-          <SectionHeader sectionName={"Tracked Series"} />
-          <Series
-            series={series}
-            addSeriesHandler={addSeries}
-            deleteSeriesHandler={deleteSeries}
-          />
-        </Page>
-        <Page show={route == Route.Jobs}>
-          <SectionHeader sectionName={"Jobs"} />
-          <button type="submit" onClick={triggerScrapeForAllSeries}>
-            Start scrape for all tracked series
-          </button>
-          <button type="submit" onClick={deleteAllJobs}>
-            Delete job history from database
-          </button>
-          <Jobs jobs={jobs} />
-        </Page>
-      </div>
+      <div>{getPageContent()}</div>
     </div>
   );
 }
