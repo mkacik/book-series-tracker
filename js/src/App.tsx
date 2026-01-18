@@ -27,33 +27,18 @@ enum Route {
   Jobs = "/jobs",
 }
 
-function SiteHeader() {
+function SiteHeader({ children }: { children: React.ReactNode }) {
   return (
     <header className="header">
       <h1>Book Series Tracker</h1>
       <span className="header-filler" />
-      <AccountSection />
+      {children}
     </header>
   );
 }
 
-function AccountSection() {
-  const [username, setUsername] = useState<string | null>(null);
-
-  const fetchUsername = () => {
-    fetch(BackendRoute.User)
-      .then((response) => response.json())
-      .then((result) => {
-        const user = result as { username: string };
-        setUsername(user.username);
-      });
-  };
-
-  useEffect(() => {
-    fetchUsername();
-  }, []);
-
-  if (username === null) {
+function AccountSection({ user }: { user: string | null }) {
+  if (user === null) {
     return (
       <span>
         <a href="login">Login</a>
@@ -62,7 +47,7 @@ function AccountSection() {
   }
   return (
     <span>
-      Hi {username}! <a href="logout">Logout</a>
+      Hi {user}! <a href="logout">Logout</a>
     </span>
   );
 }
@@ -94,16 +79,28 @@ function App() {
   // UI state
   const [route, setRoute] = useState<Route>(getRouteFromURL());
 
-  // backend data
-  const [books, setBooks] = useState<Array<Book>>([]);
-  const [series, setSeries] = useState<Array<BookSeries>>([]);
-  const [jobs, setJobs] = useState<Array<Job>>([]);
-
   const setActiveRoute = (newRoute: Route): void => {
     let url = new URL(newRoute, window.location.origin);
     history.pushState({}, "", url);
     setRoute(newRoute);
   };
+
+  // logged-in user
+  const [user, setUser] = useState<string | null>(null);
+
+  const fetchUser = () => {
+    fetch(BackendRoute.User)
+      .then((response) => response.json())
+      .then((result) => {
+        const user = result as { username: string };
+        setUser(user.username);
+      });
+  };
+
+  // backend data
+  const [books, setBooks] = useState<Array<Book>>([]);
+  const [series, setSeries] = useState<Array<BookSeries>>([]);
+  const [jobs, setJobs] = useState<Array<Job>>([]);
 
   const fetchAndSetBooks = () => {
     fetch(BackendRoute.Books)
@@ -146,6 +143,7 @@ function App() {
   };
 
   useEffect(() => {
+    fetchUser();
     fetchAndSetSeries();
     fetchAndSetBooks();
     fetchAndSetJobs();
@@ -245,7 +243,9 @@ function App() {
 
   return (
     <div>
-      <SiteHeader />
+      <SiteHeader>
+        <AccountSection user={user} />
+      </SiteHeader>
       <div>
         <button onClick={() => setActiveRoute(Route.Default)}>Books</button>
         <button onClick={() => setActiveRoute(Route.Jobs)}>Jobs</button>
