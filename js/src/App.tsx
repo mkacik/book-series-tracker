@@ -8,11 +8,12 @@ import {
   GetAllBooksResult,
   GetAllSeriesResult,
   GetAllJobsResult,
+  Job,
 } from "./generated/types";
 import { SectionHeader } from "./common";
 import { Books } from "./Books";
 import { Series } from "./Series";
-import { Jobs, isJobSuccessful, isJobProcessing } from "./Jobs";
+import { Jobs, isJobProcessing } from "./Jobs";
 
 enum BackendRoute {
   User = "/api/me",
@@ -96,7 +97,7 @@ function App() {
   // backend data
   const [books, setBooks] = useState<Array<Book>>([]);
   const [series, setSeries] = useState<Array<BookSeries>>([]);
-  const [jobs, setJobs] = useState<GetAllJobsResult>(null);
+  const [jobs, setJobs] = useState<Array<Job>>([]);
 
   const setActiveRoute = (newRoute: Route): void => {
     let url = new URL(newRoute, window.location.origin);
@@ -113,10 +114,6 @@ function App() {
       });
   };
 
-  useEffect(() => {
-    fetchAndSetBooks();
-  }, []);
-
   const fetchAndSetSeries = () => {
     fetch(BackendRoute.Series)
       .then((response) => response.json())
@@ -126,23 +123,19 @@ function App() {
       });
   };
 
-  useEffect(() => {
-    fetchAndSetSeries();
-  }, []);
-
   const fetchAndSetJobs = () => {
     fetch(BackendRoute.Jobs)
       .then((response) => response.json())
       .then((result) => {
-        const newJobs = result as GetAllJobsResult;
+        const jobsResult = result as GetAllJobsResult;
+        const newJobs = jobsResult.jobs;
 
-        // on any job state transition to successful, refetch series and books. Don't need
-        // to compare job by job, count of successful jobs is enough.
+        // on any job state transition to done, refetch series and books. Don't need
+        // to compare job by job, count of processing jobs is enough.
         if (jobs != null) {
-          const oldJobsSuccessCount = jobs.jobs.filter(isJobSuccessful).length;
-          const newJobsSuccessCount =
-            newJobs.jobs.filter(isJobSuccessful).length;
-          if (newJobsSuccessCount > oldJobsSuccessCount) {
+          const oldProcessingCount = jobs.filter(isJobProcessing).length;
+          const newProcessingCount = newJobs.filter(isJobProcessing).length;
+          if (oldProcessingCount > newProcessingCount) {
             fetchAndSetSeries();
             fetchAndSetBooks();
           }
@@ -153,13 +146,18 @@ function App() {
   };
 
   useEffect(() => {
-    if (jobs == null) {
-      fetchAndSetJobs();
-      return () => {};
+    fetchAndSetSeries();
+    fetchAndSetBooks();
+    fetchAndSetJobs();
+  }, []);
+
+  useEffect(() => {
+    if (jobs.length === 0) {
+      return;
     }
 
     let intervalID = null;
-    let shouldRefresh = jobs.jobs.some(isJobProcessing);
+    let shouldRefresh = jobs.some(isJobProcessing);
 
     if (shouldRefresh) {
       intervalID = setInterval(fetchAndSetJobs, 5000);
@@ -170,7 +168,7 @@ function App() {
         clearInterval(intervalID);
       }
     };
-  }, [jobs, fetchAndSetJobs]);
+  }, [jobs]);
 
   const addSeries = (asin: string): void => {
     fetch(BackendRoute.Series, {

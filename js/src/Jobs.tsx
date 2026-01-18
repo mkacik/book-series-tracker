@@ -1,12 +1,8 @@
 import React from "react";
-import { Job, GetAllJobsResult } from "./generated/types";
+import { Job } from "./generated/types";
 
 export function isJobProcessing(job: Job) {
   return ["QUEUED", "PROCESSING"].includes(job.status);
-}
-
-export function isJobSuccessful(job: Job) {
-  return job.status == "SUCCESSFUL";
 }
 
 function pad(num: number): string {
@@ -23,7 +19,7 @@ function formatTimestamp(ts: number): string {
   let year = date.getFullYear();
   let month = pad(date.getMonth() + 1);
   let day = pad(date.getDate());
-  let time = date.toTimeString().replace(/ .*/, "")
+  let time = date.toTimeString().replace(/ .*/, "");
 
   return `${year}-${month}-${day} ${time}`;
 }
@@ -48,11 +44,7 @@ function JobRow({ job }: { job: Job }) {
   );
 }
 
-export function Jobs({ jobs }: { jobs: GetAllJobsResult }) {
-  if (jobs == null) {
-    return null;
-  }
-
+export function Jobs({ jobs }: { jobs: Array<Job> }) {
   return (
     <>
       <table>
@@ -69,7 +61,7 @@ export function Jobs({ jobs }: { jobs: GetAllJobsResult }) {
           </tr>
         </thead>
         <tbody>
-          {jobs.jobs.map((job, index) => (
+          {jobs.map((job, index) => (
             <JobRow key={index} job={job} />
           ))}
         </tbody>
