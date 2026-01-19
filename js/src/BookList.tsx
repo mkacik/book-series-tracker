@@ -1,5 +1,4 @@
 import React from "react";
-import { useState } from "react";
 import { Book } from "./generated/types";
 
 function formatReleaseDate(book: Book) {
@@ -9,9 +8,9 @@ function formatReleaseDate(book: Book) {
   return `${year}-${month}-${day}`;
 }
 
-function BookCard({ book }: { book: Book }) {
+function BookListItem({ book }: { book: Book }) {
   return (
-    <div className="card">
+    <div>
       <h3>
         {formatReleaseDate(book)}: {book.title}
       </h3>
@@ -26,7 +25,7 @@ function BookCard({ book }: { book: Book }) {
   );
 }
 
-export function Books({ books }: { books: Array<Book> }) {
+export function BookList({ books }: { books: Array<Book> }) {
   if (books.length == 0) {
     return "No upcoming books yet.";
   }
@@ -34,7 +33,7 @@ export function Books({ books }: { books: Array<Book> }) {
   return (
     <>
       {books.map((book, index) => (
-        <BookCard key={index} book={book} />
+        <BookListItem key={index} book={book} />
       ))}
     </>
   );

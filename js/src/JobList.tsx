@@ -44,28 +44,26 @@ function JobRow({ job }: { job: Job }) {
   );
 }
 
-export function Jobs({ jobs }: { jobs: Array<Job> }) {
+export function JobList({ jobs }: { jobs: Array<Job> }) {
   return (
-    <>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Params</th>
-            <th>Status</th>
-            <th>Duration (s)</th>
-            <th>Errors</th>
-            <th>Time Job Created</th>
-            <th>Time Processing Started</th>
-            <th>Time Processing Finished</th>
-          </tr>
-        </thead>
-        <tbody>
-          {jobs.map((job, index) => (
-            <JobRow key={index} job={job} />
-          ))}
-        </tbody>
-      </table>
-    </>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Params</th>
+          <th>Status</th>
+          <th>Duration (s)</th>
+          <th>Errors</th>
+          <th>Time Job Created</th>
+          <th>Time Processing Started</th>
+          <th>Time Processing Finished</th>
+        </tr>
+      </thead>
+      <tbody>
+        {jobs.map((job, index) => (
+          <JobRow key={index} job={job} />
+        ))}
+      </tbody>
+    </table>
   );
 }

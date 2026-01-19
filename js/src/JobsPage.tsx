@@ -1,7 +1,7 @@
 import React from "react";
 import { Job } from "./generated/types";
 import { SectionHeader } from "./common";
-import { Jobs } from "./Jobs";
+import { JobList } from "./JobList";
 import { BackendRoute } from "./Navigation";
 
 export function JobsPage({
@@ -32,7 +32,7 @@ export function JobsPage({
       <button type="submit" onClick={triggerScrapeForAllSeries}>
         Start scrape for all tracked series
       </button>
-      <Jobs jobs={jobs} />
+      <JobList jobs={jobs} />
     </>
   );
 }

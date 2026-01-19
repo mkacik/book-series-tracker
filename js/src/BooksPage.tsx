@@ -1,9 +1,32 @@
 import React from "react";
 import { Book, BookSeries } from "./generated/types";
 import { SectionHeader } from "./common";
-import { Books } from "./Books";
-import { Series } from "./Series";
+import { BookList } from "./BookList";
+import { SeriesList } from "./SeriesList";
 import { BackendRoute } from "./Navigation";
+
+function AddSeriesForm({
+  addSeriesHandler,
+}: {
+  addSeriesHandler: (asin: string) => void;
+}) {
+  const addSeries = (event: React.SyntheticEvent): void => {
+    event.preventDefault();
+    const target = event.target as typeof event.target & {
+      asin: { value: string };
+    };
+    let asin = target.asin.value;
+    (event.target as HTMLFormElement).reset();
+    addSeriesHandler(asin);
+  };
+
+  return (
+    <form onSubmit={addSeries}>
+      <input type="text" name="asin" required={true} />{" "}
+      <button type="submit">Add series</button>
+    </form>
+  );
+}
 
 export function BooksPage({
   books,
@@ -56,13 +79,10 @@ export function BooksPage({
   return (
     <>
       <SectionHeader sectionName={"Upcoming Books"} />
-      <Books books={books} />
+      <BookList books={books} />
       <SectionHeader sectionName={"Tracked Series"} />
-      <Series
-        series={series}
-        addSeriesHandler={addSeries}
-        deleteSeriesHandler={deleteSeries}
-      />
+      <AddSeriesForm addSeriesHandler={addSeries} />
+      <SeriesList series={series} deleteSeriesHandler={deleteSeries} />
     </>
   );
 }

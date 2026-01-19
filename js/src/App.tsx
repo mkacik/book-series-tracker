@@ -11,7 +11,7 @@ import {
   Job,
 } from "./generated/types";
 import { SectionHeader } from "./common";
-import { isJobProcessing } from "./Jobs";
+import { isJobProcessing } from "./JobList";
 import {
   BackendRoute,
   Route,
