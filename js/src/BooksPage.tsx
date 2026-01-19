@@ -4,6 +4,7 @@ import { SectionHeader } from "./common";
 import { BookList } from "./BookList";
 import { SeriesList } from "./SeriesList";
 import { BackendRoute } from "./Navigation";
+import { useUserContext } from "./User";
 
 function AddSeriesForm({
   addSeriesHandler,
@@ -39,6 +40,8 @@ export function BooksPage({
   refreshBooksAndSeries: () => void;
   refreshJobs: () => void;
 }) {
+  const user = useUserContext();
+
   const addSeries = (asin: string): void => {
     fetch(BackendRoute.Series, {
       method: "POST",
@@ -81,8 +84,12 @@ export function BooksPage({
       <SectionHeader sectionName={"Upcoming Books"} />
       <BookList books={books} />
       <SectionHeader sectionName={"Tracked Series"} />
-      <AddSeriesForm addSeriesHandler={addSeries} />
-      <SeriesList series={series} deleteSeriesHandler={deleteSeries} />
+      {user.isLoggedIn() && <AddSeriesForm addSeriesHandler={addSeries} />}
+      <SeriesList
+        series={series}
+        deleteSeriesHandler={deleteSeries}
+        showDeleteButton={user.isLoggedIn()}
+      />
     </>
   );
 }

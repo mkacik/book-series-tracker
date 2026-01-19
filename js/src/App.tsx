@@ -10,6 +10,7 @@ import {
   GetAllJobsResult,
   Job,
 } from "./generated/types";
+import { User, UserContext } from "./User";
 import { SectionHeader } from "./common";
 import { isJobProcessing } from "./JobList";
 import {
@@ -32,41 +33,43 @@ function SiteHeader({ children }: { children: React.ReactNode }) {
   );
 }
 
-function AccountSection({ user }: { user: string | null }) {
+function UserSection({ user }: { user: User | null }) {
   if (user === null) {
+    return <span>Loading...</span>;
+  }
+  if (user.isLoggedIn()) {
     return (
       <span>
-        <a href="login">Login</a>
+        Hi {user.getName()}! <a href="logout">Logout</a>
       </span>
     );
   }
   return (
     <span>
-      Hi {user}! <a href="logout">Logout</a>
+      <a href="login">Login</a>
     </span>
   );
 }
 
 function App() {
-  // UI state
   const route = usePathname();
 
-  // logged-in user
-  const [user, setUser] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [books, setBooks] = useState<Array<Book>>([]);
+  const [series, setSeries] = useState<Array<BookSeries>>([]);
+  const [jobs, setJobs] = useState<Array<Job>>([]);
 
   const fetchUser = () => {
     fetch(BackendRoute.User)
       .then((response) => response.json())
       .then((result) => {
         const user = result as { username: string };
-        setUser(user.username);
+        setUser(new User(user.username));
+      })
+      .catch((error) => {
+        setUser(new User(null));
       });
   };
-
-  // backend data
-  const [books, setBooks] = useState<Array<Book>>([]);
-  const [series, setSeries] = useState<Array<BookSeries>>([]);
-  const [jobs, setJobs] = useState<Array<Job>>([]);
 
   const fetchBooksAndSeries = () => {
     fetch(BackendRoute.Books)
@@ -130,19 +133,29 @@ function App() {
     };
   }, [jobs]);
 
+  const showJobsPage = user !== null && user.isLoggedIn();
+
   const getPageContent = () => {
+    if (user === null) {
+      return "Loading...";
+    }
+
     switch (route) {
       case Route.Books:
         return (
-          <BooksPage
-            books={books}
-            series={series}
-            refreshBooksAndSeries={fetchBooksAndSeries}
-            refreshJobs={fetchJobs}
-          />
+          <UserContext value={user}>
+            <BooksPage
+              books={books}
+              series={series}
+              refreshBooksAndSeries={fetchBooksAndSeries}
+              refreshJobs={fetchJobs}
+            />
+          </UserContext>
         );
       case Route.Jobs:
-        return <JobsPage jobs={jobs} refreshJobs={fetchJobs} />;
+        if (showJobsPage) {
+          return <JobsPage jobs={jobs} refreshJobs={fetchJobs} />;
+        }
       default:
         return <RouteNotFound />;
     }
@@ -151,11 +164,11 @@ function App() {
   return (
     <div>
       <SiteHeader>
-        <AccountSection user={user} />
+        <UserSection user={user} />
       </SiteHeader>
       <div>
         <RouteLink route={Route.Books}>Books</RouteLink>
-        <RouteLink route={Route.Jobs}>Jobs</RouteLink>
+        {showJobsPage && <RouteLink route={Route.Jobs}>Jobs</RouteLink>}
       </div>
       <hr />
       <div>{getPageContent()}</div>

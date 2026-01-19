@@ -6,9 +6,11 @@ type DeleteSeriesHandler = (asin: string) => void;
 function SeriesListItem({
   series,
   deleteSeriesHandler,
+  showDeleteButton,
 }: {
   series: BookSeries;
   deleteSeriesHandler: DeleteSeriesHandler;
+  showDeleteButton: boolean;
 }) {
   const deleteSeries = (event: React.SyntheticEvent): void => {
     let warning =
@@ -25,9 +27,11 @@ function SeriesListItem({
     <li key={series.asin}>
       {series.name}{" "}
       <a href={"https://www.amazon.com/dp/" + series.asin}>{series.asin}</a>{" "}
-      <button type="submit" onClick={deleteSeries}>
-        delete
-      </button>
+      {showDeleteButton && (
+        <button type="submit" onClick={deleteSeries}>
+          delete
+        </button>
+      )}
     </li>
   );
 }
@@ -35,9 +39,11 @@ function SeriesListItem({
 export function SeriesList({
   series,
   deleteSeriesHandler,
+  showDeleteButton,
 }: {
   series: Array<BookSeries>;
   deleteSeriesHandler: DeleteSeriesHandler;
+  showDeleteButton: boolean;
 }) {
   if (series.length == 0) {
     return "No series tracked yet. Add series ASIN to start";
@@ -49,6 +55,7 @@ export function SeriesList({
         <SeriesListItem
           series={item}
           deleteSeriesHandler={deleteSeriesHandler}
+          showDeleteButton={showDeleteButton}
         />
       ))}
     </ul>
