@@ -11,9 +11,7 @@ import {
   Job,
 } from "./generated/types";
 import { SectionHeader } from "./common";
-import { Books } from "./Books";
-import { Series } from "./Series";
-import { Jobs, isJobProcessing } from "./Jobs";
+import { isJobProcessing } from "./Jobs";
 import {
   BackendRoute,
   Route,
@@ -21,6 +19,8 @@ import {
   RouteNotFound,
   usePathname,
 } from "./Navigation";
+import { BooksPage } from "./BooksPage";
+import { JobsPage } from "./JobsPage";
 
 function SiteHeader({ children }: { children: React.ReactNode }) {
   return (
@@ -68,16 +68,14 @@ function App() {
   const [series, setSeries] = useState<Array<BookSeries>>([]);
   const [jobs, setJobs] = useState<Array<Job>>([]);
 
-  const fetchAndSetBooks = () => {
+  const fetchBooksAndSeries = () => {
     fetch(BackendRoute.Books)
       .then((response) => response.json())
       .then((result) => {
         const booksResult = result as GetAllBooksResult;
         setBooks(booksResult.books);
       });
-  };
 
-  const fetchAndSetSeries = () => {
     fetch(BackendRoute.Series)
       .then((response) => response.json())
       .then((result) => {
@@ -86,7 +84,7 @@ function App() {
       });
   };
 
-  const fetchAndSetJobs = () => {
+  const fetchJobs = () => {
     fetch(BackendRoute.Jobs)
       .then((response) => response.json())
       .then((result) => {
@@ -99,8 +97,7 @@ function App() {
           const oldProcessingCount = jobs.filter(isJobProcessing).length;
           const newProcessingCount = newJobs.filter(isJobProcessing).length;
           if (oldProcessingCount > newProcessingCount) {
-            fetchAndSetSeries();
-            fetchAndSetBooks();
+            fetchBooksAndSeries();
           }
         }
 
@@ -110,9 +107,8 @@ function App() {
 
   useEffect(() => {
     fetchUser();
-    fetchAndSetSeries();
-    fetchAndSetBooks();
-    fetchAndSetJobs();
+    fetchBooksAndSeries();
+    fetchJobs();
   }, []);
 
   useEffect(() => {
@@ -121,10 +117,10 @@ function App() {
     }
 
     let intervalID = null;
-    let shouldRefresh = jobs.some(isJobProcessing);
+    const shouldRefresh = jobs.some(isJobProcessing);
 
     if (shouldRefresh) {
-      intervalID = setInterval(fetchAndSetJobs, 5000);
+      intervalID = setInterval(fetchJobs, 5000);
     }
 
     return () => {
@@ -134,107 +130,19 @@ function App() {
     };
   }, [jobs]);
 
-  const addSeries = (asin: string): void => {
-    fetch(BackendRoute.Series, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({ asin: asin }),
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        if (result.job_id != null) {
-          fetchAndSetJobs();
-          alert(
-            "Successfully submitted job " +
-              result.job_id +
-              ". Go to Jobs tab to check progress.",
-          );
-        } else {
-          alert("Error while submitting job: " + result.error);
-        }
-      });
-  };
-
-  const deleteSeries = (asin: string): void => {
-    fetch(BackendRoute.Series, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({ asin: asin }),
-    }).then((response) => {
-      if (response.ok) {
-        fetchAndSetBooks();
-        fetchAndSetSeries();
-      }
-    });
-  };
-
-  const deleteAllJobs = (event: React.SyntheticEvent): void => {
-    event.preventDefault();
-
-    if (
-      confirm(
-        "Do you really want to delete all finished jobs from database?",
-      ) != true
-    ) {
-      return;
-    }
-
-    fetch(BackendRoute.Jobs, {
-      method: "DELETE",
-    }).then((response) => {
-      if (response.ok) {
-        fetchAndSetJobs();
-      }
-    });
-  };
-
-  const triggerScrapeForAllSeries = (event: React.SyntheticEvent): void => {
-    event.preventDefault();
-    if (confirm("Do you really want to trigger the scrape?") != true) {
-      return;
-    }
-
-    fetch(BackendRoute.Jobs, {
-      method: "POST",
-    }).then((response) => {
-      if (response.ok) {
-        fetchAndSetJobs();
-      }
-    });
-  };
-
   const getPageContent = () => {
     switch (route) {
       case Route.Books:
         return (
-          <>
-            <SectionHeader sectionName={"Upcoming Books"} />
-            <Books books={books} />
-            <SectionHeader sectionName={"Tracked Series"} />
-            <Series
-              series={series}
-              addSeriesHandler={addSeries}
-              deleteSeriesHandler={deleteSeries}
-            />
-          </>
+          <BooksPage
+            books={books}
+            series={series}
+            refreshBooksAndSeries={fetchBooksAndSeries}
+            refreshJobs={fetchJobs}
+          />
         );
       case Route.Jobs:
-        return (
-          <>
-            <SectionHeader sectionName={"Jobs"} />
-            <button type="submit" onClick={triggerScrapeForAllSeries}>
-              Start scrape for all tracked series
-            </button>
-            <button type="submit" onClick={deleteAllJobs}>
-              Delete job history from database
-            </button>
-            <Jobs jobs={jobs} />
-          </>
-        );
+        return <JobsPage jobs={jobs} refreshJobs={fetchJobs} />;
       default:
         return <RouteNotFound />;
     }
