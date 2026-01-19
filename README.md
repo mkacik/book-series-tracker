@@ -2,11 +2,13 @@
 
 I recently started reading few long book series, getting my money’s worth on the Kindle Unlimited subscription. With most series still running, I needed some solution to track upcoming books without having to manually check and track release dates. This is how this ugly baby was born.
 
-The app, while running, will scrape Amazon pages for all configured series once per day, looking for any newly announced books. It then publishes ICS calendar file with all the books. I run it on my laptop and configured my phone to use it as subscription calendar. Like many production-minded folks I am trying to open my heart to Rust, so that’s what the server is written in. It also comes with most basic React UI to add series and monitor scraping jobs. To not overcomplicate auth, any write operations only allowed from local IP addresses, which is good enough for my use.
+The server, while running, will scrape Amazon pages for all configured series once per day, looking for any newly announced books. Basic web app allows for browsing upcoming books/tracked series without auth, but to add new series, or trigger any writes user must be logged in. Users can be added from command line.
+
+I am trying to open my heart to Rust, so that’s what the server is written in. Used Rocket for www server, while web UI is TypeScript + React. I run it on home server, with https-terminating proxy in front (cause passwords).
 
 Couple external deps:
-- sqlite3 (database)
-- geckodriver (for selenium web scraper)
+- sqlite3 - database
+- geckodriver - selenium web scraper
 
 This is how UI looks like:
 
@@ -25,6 +27,11 @@ Run webdriver (for scraping) and server itself:
 ```
 $ geckodriver &
 $ ROCKET_LOG_LEVEL=normal ROCKET_ADDRESS=0.0.0.0 cargo run server
+```
+
+Add new user or change password of existing user:
+```
+$ cargo run passwords
 ```
 
 Synchronize the backend Rust types with TypeScript types used in UI:
