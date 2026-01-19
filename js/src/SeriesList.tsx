@@ -12,8 +12,9 @@ function SeriesListItem({
   deleteSeriesHandler: DeleteSeriesHandler;
   showDeleteButton: boolean;
 }) {
-  const deleteSeries = (event: React.SyntheticEvent): void => {
-    let warning =
+  const deleteSeries = (e: React.SyntheticEvent): void => {
+    e.preventDefault();
+    const warning =
       `Do you really want to stop tracking "${series.name}" series? This will ` +
       "delete all its books from calendar. If you re-add the series later, books " +
       "released in the meantime will not be visible in the tracker.";
@@ -53,6 +54,7 @@ export function SeriesList({
     <ul>
       {series.map((item, index) => (
         <SeriesListItem
+          key={index}
           series={item}
           deleteSeriesHandler={deleteSeriesHandler}
           showDeleteButton={showDeleteButton}

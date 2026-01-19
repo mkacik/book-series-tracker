@@ -14,18 +14,18 @@ function formatTimestamp(ts: number): string {
     return "";
   }
 
-  let date = new Date(ts);
+  const date = new Date(ts);
 
-  let year = date.getFullYear();
-  let month = pad(date.getMonth() + 1);
-  let day = pad(date.getDate());
-  let time = date.toTimeString().replace(/ .*/, "");
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const time = date.toTimeString().replace(/ .*/, "");
 
   return `${year}-${month}-${day} ${time}`;
 }
 
 function JobRow({ job }: { job: Job }) {
-  let duration_ms =
+  const duration_ms =
     job.time_started && job.time_finished
       ? (job.time_finished - job.time_started) / 1000
       : "";

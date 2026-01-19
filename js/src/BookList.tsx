@@ -2,9 +2,9 @@ import React from "react";
 import { Book } from "./generated/types";
 
 function formatReleaseDate(book: Book) {
-  let year = book.year;
-  let month = book.month.toString().padStart(2, "0");
-  let day = book.day.toString().padStart(2, "0");
+  const year = book.year;
+  const month = book.month.toString().padStart(2, "0");
+  const day = book.day.toString().padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 

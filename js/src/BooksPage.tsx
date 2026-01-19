@@ -16,7 +16,7 @@ function AddSeriesForm({
     const target = event.target as typeof event.target & {
       asin: { value: string };
     };
-    let asin = target.asin.value;
+    const asin = target.asin.value;
     (event.target as HTMLFormElement).reset();
     addSeriesHandler(asin);
   };

@@ -2,7 +2,6 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import {
-  AddSeriesResult,
   Book,
   BookSeries,
   GetAllBooksResult,
@@ -11,7 +10,6 @@ import {
   Job,
 } from "./generated/types";
 import { User, UserContext } from "./User";
-import { SectionHeader } from "./common";
 import { isJobProcessing } from "./JobList";
 import {
   BackendRoute,
@@ -66,7 +64,7 @@ function App() {
         const user = result as { username: string };
         setUser(new User(user.username));
       })
-      .catch((error) => {
+      .catch((_error) => {
         setUser(new User(null));
       });
   };
@@ -156,6 +154,7 @@ function App() {
         if (showJobsPage) {
           return <JobsPage jobs={jobs} refreshJobs={fetchJobs} />;
         }
+      // break omitted: fallback to 404
       default:
         return <RouteNotFound />;
     }
