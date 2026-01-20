@@ -1,10 +1,11 @@
 import React from "react";
 import { Book, BookSeries } from "./generated/types";
-import { SectionHeader } from "./common";
 import { BookList } from "./BookList";
 import { SeriesList } from "./SeriesList";
 import { BackendRoute } from "./Navigation";
 import { useUserContext } from "./User";
+
+import * as UI from "./UI";
 
 function AddSeriesForm({
   addSeriesHandler,
@@ -81,15 +82,17 @@ export function BooksPage({
 
   return (
     <>
-      <SectionHeader sectionName={"Upcoming Books"} />
-      <BookList books={books} />
-      <SectionHeader sectionName={"Tracked Series"} />
-      {user.isLoggedIn() && <AddSeriesForm addSeriesHandler={addSeries} />}
-      <SeriesList
-        series={series}
-        deleteSeriesHandler={deleteSeries}
-        showDeleteButton={user.isLoggedIn()}
-      />
+      <UI.Section title="Upcoming Books">
+        <BookList books={books} />
+      </UI.Section>
+      <UI.Section title="Tracked Series">
+        {user.isLoggedIn() && <AddSeriesForm addSeriesHandler={addSeries} />}
+        <SeriesList
+          series={series}
+          deleteSeriesHandler={deleteSeries}
+          showDeleteButton={user.isLoggedIn()}
+        />
+      </UI.Section>
     </>
   );
 }

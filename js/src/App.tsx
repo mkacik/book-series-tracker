@@ -21,15 +21,7 @@ import {
 import { BooksPage } from "./BooksPage";
 import { JobsPage } from "./JobsPage";
 
-function SiteHeader({ children }: { children: React.ReactNode }) {
-  return (
-    <header className="header">
-      <h1>Book Series Tracker</h1>
-      <span className="header-filler" />
-      {children}
-    </header>
-  );
-}
+import * as UI from "./UI";
 
 function UserSection({ user }: { user: User | null }) {
   if (user === null) {
@@ -161,17 +153,17 @@ function App() {
   };
 
   return (
-    <div>
-      <SiteHeader>
-        <UserSection user={user} />
-      </SiteHeader>
-      <div>
+    <UI.Layout>
+      <UI.Header>
+        <UI.AppTitle>Book Series Tracker</UI.AppTitle>
         <RouteLink route={Route.Books}>Books</RouteLink>
         {showJobsPage && <RouteLink route={Route.Jobs}>Jobs</RouteLink>}
-      </div>
-      <hr />
-      <div>{getPageContent()}</div>
-    </div>
+        <UI.HeaderUserSection>
+          <UserSection user={user} />
+        </UI.HeaderUserSection>
+      </UI.Header>
+      <UI.Main>{getPageContent()}</UI.Main>
+    </UI.Layout>
   );
 }
 

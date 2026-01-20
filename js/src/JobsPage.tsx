@@ -1,8 +1,9 @@
 import React from "react";
 import { Job } from "./generated/types";
-import { SectionHeader } from "./common";
 import { JobList } from "./JobList";
 import { BackendRoute } from "./Navigation";
+
+import * as UI from "./UI";
 
 function ScrapeButton({ refreshJobs }: { refreshJobs: () => void }) {
   const triggerScrapeForAllSeries = (event: React.SyntheticEvent): void => {
@@ -35,10 +36,9 @@ export function JobsPage({
   refreshJobs: () => void;
 }) {
   return (
-    <>
-      <SectionHeader sectionName={"Jobs"} />
+    <UI.Section title="Jobs">
       <ScrapeButton refreshJobs={refreshJobs} />
       <JobList jobs={jobs} />
-    </>
+    </UI.Section>
   );
 }
