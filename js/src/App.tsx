@@ -25,20 +25,16 @@ import * as UI from "./UI";
 
 function UserSection({ user }: { user: User | null }) {
   if (user === null) {
-    return <span>Loading...</span>;
+    return "Loading...";
   }
   if (user.isLoggedIn()) {
     return (
-      <span>
-        Hi {user.getName()}! <a href="logout">Logout</a>
-      </span>
+      <>
+        Hi {user.getName()}!<UI.Anchor href="logout">Logout</UI.Anchor>
+      </>
     );
   }
-  return (
-    <span>
-      <a href="login">Login</a>
-    </span>
-  );
+  return <UI.Anchor href="login">Login</UI.Anchor>;
 }
 
 function App() {
@@ -155,13 +151,16 @@ function App() {
   return (
     <UI.Layout>
       <UI.Header>
-        <UI.AppTitle>Book Series Tracker</UI.AppTitle>
+        <UI.Title order={3}>Book Series Tracker</UI.Title>
+
         <RouteLink route={Route.Books}>Books</RouteLink>
         {showJobsPage && <RouteLink route={Route.Jobs}>Jobs</RouteLink>}
-        <UI.HeaderUserSection>
+
+        <UI.Flex gap="sm" ml="auto">
           <UserSection user={user} />
-        </UI.HeaderUserSection>
+        </UI.Flex>
       </UI.Header>
+
       <UI.Main>{getPageContent()}</UI.Main>
     </UI.Layout>
   );

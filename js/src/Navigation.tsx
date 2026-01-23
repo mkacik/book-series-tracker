@@ -1,6 +1,8 @@
 import React from "react";
 import { useSyncExternalStore } from "react";
 
+import * as UI from "./UI";
+
 export enum BackendRoute {
   User = "/api/me",
   Books = "/api/books",
@@ -19,16 +21,6 @@ function navigate(route: Route) {
   window.dispatchEvent(new PopStateEvent("popstate"));
 }
 
-export function RouteLink({
-  route,
-  children,
-}: {
-  route: Route;
-  children: React.ReactNode;
-}) {
-  return <button onClick={() => navigate(route)}>{children}</button>;
-}
-
 export function usePathname() {
   return useSyncExternalStore(
     // 1. Subscribe to browser navigation events
@@ -41,6 +33,32 @@ export function usePathname() {
   );
 }
 
+export function RouteLink({
+  route,
+  children,
+}: {
+  route: Route;
+  children: React.ReactNode;
+}) {
+  return (
+    <UI.Button
+      variant="subtle"
+      size="compact-xl"
+      onClick={() => navigate(route)}
+    >
+      <UI.Text c="black" size="lg">
+        {children}
+      </UI.Text>
+    </UI.Button>
+  );
+}
+
 export function RouteNotFound() {
-  return <span>404</span>;
+  return (
+    <UI.Center>
+      <UI.Text c="dimmed" size="xl">
+        Page Not Found
+      </UI.Text>
+    </UI.Center>
+  );
 }
