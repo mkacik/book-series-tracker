@@ -1,6 +1,6 @@
 import React from "react";
 import { Job } from "./generated/types";
-import { JobList } from "./JobList";
+import { JobsTable } from "./JobsTable";
 import { BackendRoute } from "./Navigation";
 
 import * as UI from "./UI";
@@ -22,9 +22,11 @@ function ScrapeButton({ refreshJobs }: { refreshJobs: () => void }) {
   };
 
   return (
-    <button type="submit" onClick={triggerScrapeForAllSeries}>
-      Start scrape for all tracked series
-    </button>
+    <span>
+      <UI.Button variant="outline" onClick={triggerScrapeForAllSeries}>
+        Start scrape for all tracked series
+      </UI.Button>
+    </span>
   );
 }
 
@@ -38,7 +40,7 @@ export function JobsPage({
   return (
     <UI.Section title="Jobs">
       <ScrapeButton refreshJobs={refreshJobs} />
-      <JobList jobs={jobs} />
+      <JobsTable jobs={jobs} />
     </UI.Section>
   );
 }
