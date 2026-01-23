@@ -17,7 +17,7 @@ const theme = createTheme({
   fontFamily: "Ubuntu, Roboto, Helvetica, sans-serif",
 });
 
-export const HEADER_HEIGHT = 76;
+export const HEADER_HEIGHT = 60;
 
 // root
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -36,19 +36,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export function Header({ children }: { children: React.ReactNode }) {
   return (
     <AppShell.Header>
-      <Flex p="md" gap="md">
+      <Flex pl="md" pr="md" pt="xs" pb="xs" gap="lg" align="center">
         {children}
       </Flex>
     </AppShell.Header>
   );
-}
-
-export function AppTitle({ children }: { children: React.ReactNode }) {
-  return <Title order={1}>{children}</Title>;
-}
-
-export function HeaderUserSection({ children }: { children: React.ReactNode }) {
-  return <span style={{ marginLeft: "auto" }}>{children}</span>;
 }
 
 export function Main({ children }: { children: React.ReactNode }) {
@@ -92,6 +84,7 @@ export const ListItem = List.Item;
 export {
   Anchor,
   Button,
+  Center,
   Flex,
   List,
   Space,
