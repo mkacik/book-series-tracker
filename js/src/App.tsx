@@ -10,7 +10,7 @@ import {
   Job,
 } from "./generated/types";
 import { User, UserContext } from "./User";
-import { isJobProcessing } from "./JobList";
+import { isJobProcessing } from "./Job";
 import {
   BackendRoute,
   Route,

@@ -17,11 +17,13 @@ const theme = createTheme({
   fontFamily: "Ubuntu, Roboto, Helvetica, sans-serif",
 });
 
+export const HEADER_HEIGHT = 76;
+
 // root
 export function Layout({ children }: { children: React.ReactNode }) {
   const headerStyle = {
     // can't set to auto, it will overlap with page content.
-    height: 76,
+    height: HEADER_HEIGHT,
   };
 
   return (
@@ -93,6 +95,8 @@ export {
   Flex,
   List,
   Space,
+  Table,
+  Text,
   TextInput,
   Title,
 } from "@mantine/core";
