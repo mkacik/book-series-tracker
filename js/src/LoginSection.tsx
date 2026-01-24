@@ -33,16 +33,12 @@ function LoginButton({ setUser }: { setUser: SetUserHandler }) {
       if (!response.ok) {
         throw new Error();
       }
-      console.log("a");
 
       const result = await response.json();
       const user = result as { username: string };
 
-      console.log("b");
       setError(false);
-      console.log("c");
       setOpened(false);
-      console.log("d");
       setUser(new User(user.username));
     } catch (_) {
       setError(true);
