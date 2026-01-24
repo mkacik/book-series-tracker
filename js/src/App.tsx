@@ -20,22 +20,9 @@ import {
 } from "./Navigation";
 import { BooksPage } from "./BooksPage";
 import { JobsPage } from "./JobsPage";
+import { LoginSection } from "./LoginSection";
 
 import * as UI from "./UI";
-
-function UserSection({ user }: { user: User | null }) {
-  if (user === null) {
-    return "Loading...";
-  }
-  if (user.isLoggedIn()) {
-    return (
-      <>
-        Hi {user.getName()}!<UI.Anchor href="logout">Logout</UI.Anchor>
-      </>
-    );
-  }
-  return <UI.Anchor href="login">Login</UI.Anchor>;
-}
 
 function App() {
   const route = usePathname();
@@ -156,8 +143,8 @@ function App() {
         <RouteLink route={Route.Books}>Books</RouteLink>
         {showJobsPage && <RouteLink route={Route.Jobs}>Jobs</RouteLink>}
 
-        <UI.Flex gap="sm" ml="auto">
-          <UserSection user={user} />
+        <UI.Flex gap="sm" ml="auto" align="center">
+          <LoginSection user={user} setUser={setUser} />
         </UI.Flex>
       </UI.Header>
 
