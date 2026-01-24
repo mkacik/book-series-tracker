@@ -8,6 +8,9 @@ export enum BackendRoute {
   Books = "/api/books",
   Series = "/api/series",
   Jobs = "/api/jobs",
+
+  Login = "/api/login",
+  Logout = "/api/logout",
 }
 
 export enum Route {

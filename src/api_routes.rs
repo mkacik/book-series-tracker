@@ -11,16 +11,6 @@ use crate::database::Database;
 use crate::job_server::JobServer;
 use crate::user::User;
 
-#[get("/me")]
-pub async fn me(user: Option<&User>) -> Option<(ContentType, String)> {
-    match user {
-        Some(user) => match to_json_string(&user) {
-            Ok(json) => Some((ContentType::JSON, json)),
-            Err(_) => None,
-        },
-        None => None,
-    }
-}
 
 #[get("/books")]
 pub async fn books_get_controller(db: &State<Arc<Database>>) -> Option<(ContentType, String)> {

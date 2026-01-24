@@ -3,7 +3,6 @@ extern crate rocket;
 
 use clap::{Parser, Subcommand};
 use rocket::fs::{relative, FileServer};
-use rocket_dyn_templates::Template;
 use std::env;
 use std::sync::Arc;
 
@@ -16,7 +15,7 @@ mod database;
 mod genjs;
 mod job_processor;
 mod job_server;
-mod login;
+mod login_routes;
 mod passwords;
 mod routes;
 mod user;
@@ -85,20 +84,13 @@ async fn main() -> anyhow::Result<()> {
             spawn_thread_for_daily_scrape(database.clone(), job_server.clone());
 
             let _rocket = rocket::build()
-                .mount(
-                    "/",
-                    routes![
-                        routes::index,
-                        routes::catchall,
-                        routes::login,
-                        login::login,
-                        login::logout,
-                    ],
-                )
+                .mount("/", routes![routes::index, routes::catchall,])
                 .mount(
                     "/api",
                     routes![
-                        api_routes::me,
+                        login_routes::me,
+                        login_routes::login,
+                        login_routes::logout,
                         api_routes::books_get_controller,
                         api_routes::jobs_delete_controller,
                         api_routes::jobs_get_controller,
@@ -109,7 +101,6 @@ async fn main() -> anyhow::Result<()> {
                     ],
                 )
                 .mount("/static", FileServer::from(relative!("www/static")))
-                .attach(Template::fairing())
                 .manage(database)
                 .manage(job_server)
                 .launch()

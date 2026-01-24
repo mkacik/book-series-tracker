@@ -82,14 +82,19 @@ export function DeleteButton({ onClick }: { onClick: () => void }) {
 export const ListItem = List.Item;
 
 export {
+  Alert,
   Anchor,
   Button,
   Center,
   Flex,
   List,
+  Modal,
+  PasswordInput,
   Space,
   Table,
   Text,
   TextInput,
   Title,
 } from "@mantine/core";
+
+export { IconAlertTriangle } from "@tabler/icons-react";
