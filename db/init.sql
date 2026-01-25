@@ -30,3 +30,5 @@ CREATE TABLE credentials (
   username TEXT PRIMARY KEY NOT NULL UNIQUE,
   pwhash TEXT NOT NULL
 );
+
+-- PRAGMA journal_mode=WAL;

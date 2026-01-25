@@ -1,4 +1,4 @@
-db/bst.db
+db/bst.db*
 target/**
 **/node_modules/**
 *.swp
