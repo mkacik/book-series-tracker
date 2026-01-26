@@ -287,6 +287,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "requires geckodriver running"]
     async fn test_scrape_url() {
         let caps = DesiredCapabilities::firefox();
         let driver = match WebDriver::new("http://localhost:4444", caps).await {
@@ -296,7 +297,7 @@ mod tests {
 
         let cwd = current_dir().unwrap();
 
-        let url = format!("file:///{}/www/testpage.html", cwd.display());
+        let url = format!("file:///{}/sanitizer/output.html", cwd.display());
         let series_asin = "TESTASIN";
 
         let maybe_result = scrape_url(&driver, url.to_string(), series_asin.to_string(), 0).await;
@@ -308,6 +309,6 @@ mod tests {
 
         assert_eq!(result.series.name, "Backyard Starship");
         assert_eq!(result.series.asin, series_asin);
-        assert_eq!(result.books.len(), 2);
+        assert_eq!(result.books.len(), 1);
     }
 }
