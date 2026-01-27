@@ -3,15 +3,8 @@ import { Book } from "./generated/types";
 
 import * as UI from "./UI";
 
-function formatReleaseDate(book: Book) {
-  const year = book.year;
-  const month = book.month.toString().padStart(2, "0");
-  const day = book.day.toString().padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
 function BookListItem({ book }: { book: Book }) {
-  const title = `${formatReleaseDate(book)}: ${book.title}`;
+  const title = `${book.release_date}: ${book.title}`;
   return (
     <UI.Flex direction="column">
       <UI.Title order={4}>{title}</UI.Title>

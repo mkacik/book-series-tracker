@@ -104,8 +104,7 @@ async fn scrape_url(
         };
         let maybe_release_date = elem_release_date.inner_html().await?;
         log::debug!("Book release date: '{}'", &maybe_release_date);
-        let (release_date_year, release_date_month, release_date_day) =
-            parse_date(maybe_release_date).unwrap();
+        let release_date = Some(parse_date(maybe_release_date).unwrap());
 
         // 4b. Find ordinal by class name: series-childAsin-count
         let elem_ordinal = elem_book
@@ -148,9 +147,7 @@ async fn scrape_url(
             ordinal: ordinal,
             title: title,
             author: authors,
-            day: release_date_day,
-            month: release_date_month,
-            year: release_date_year,
+            release_date: release_date,
             time_first_seen: now(),
         };
         books.push(book);
@@ -190,7 +187,7 @@ fn extract_asin(url: String) -> String {
     asin.to_string()
 }
 
-fn parse_date(string: String) -> Result<(u32, u32, u32), Box<dyn Error + Send + Sync>> {
+fn parse_date(string: String) -> Result<String, Box<dyn Error + Send + Sync>> {
     let parts: Vec<&str> = string.split(" ").collect();
 
     if parts.len() != 3 {
@@ -205,8 +202,9 @@ fn parse_date(string: String) -> Result<(u32, u32, u32), Box<dyn Error + Send + 
     if (day > 31) || (year > 2100) {
         return Err("Incorrect date")?;
     }
+    let date = format!("{}-{:0>2}-{:0>2}", year, month, day);
 
-    Ok((year, month, day))
+    Ok(date)
 }
 
 // I can grab some elements by id/class name, but the formatting inside changes day by day.
@@ -234,9 +232,9 @@ mod tests {
     #[test]
     fn test_parse_date_ok() {
         let cases = vec![
-            ("November 10, 2024", (2024, 11, 10)),
-            ("January 19, 2025", (2025, 1, 19)),
-            ("February 31, 2023", (2023, 2, 31)),
+            ("November 10, 2024", "2024-11-10"),
+            ("January 19, 2025", "2025-01-19"),
+            ("February 31, 2023", "2023-02-31"),
         ];
 
         for (input, expected_result) in cases.into_iter() {

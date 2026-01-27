@@ -19,9 +19,7 @@ pub struct Book {
     pub ordinal: u32, // # in series, not an id
     pub title: String,
     pub author: String,
-    pub day: u32,
-    pub month: u32,
-    pub year: u32,
+    pub release_date: Option<String>,
     #[ts(as = "i32")]
     pub time_first_seen: i64,
 }
@@ -50,16 +48,14 @@ impl Book {
         let mut conn = db.acquire_db_conn().await?;
         sqlx::query!(
             "INSERT OR IGNORE INTO books (
-          asin, series_asin, ordinal, title, author, day, month, year, time_first_seen
-        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+          asin, series_asin, ordinal, title, author, release_date, time_first_seen
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
             self.asin,
             self.series_asin,
             self.ordinal,
             self.title,
             self.author,
-            self.day,
-            self.month,
-            self.year,
+            self.release_date,
             self.time_first_seen,
         )
         .execute(&mut *conn)
@@ -70,10 +66,9 @@ impl Book {
 
     pub async fn fetch_all(db: &Database) -> anyhow::Result<GetAllBooksResult> {
         let mut conn = db.acquire_db_conn().await?;
-        let books =
-            sqlx::query_as::<_, Book>("SELECT * FROM books ORDER BY year ASC, month ASC, day ASC")
-                .fetch_all(&mut *conn)
-                .await?;
+        let books = sqlx::query_as::<_, Book>("SELECT * FROM books ORDER BY release_date ASC")
+            .fetch_all(&mut *conn)
+            .await?;
 
         Ok(GetAllBooksResult { books: books })
     }
