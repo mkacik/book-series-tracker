@@ -112,7 +112,7 @@ function AddSeriesForm({ refreshJobs }: { refreshJobs: () => void }) {
   );
 }
 
-export function SeriesSection({
+export function SeriesPage({
   series,
   refreshBooksAndSeries,
   refreshJobs,

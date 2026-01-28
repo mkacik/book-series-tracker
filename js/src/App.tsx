@@ -19,6 +19,7 @@ import {
   usePathname,
 } from "./Navigation";
 import { BooksPage } from "./BooksPage";
+import { SeriesPage } from "./SeriesPage";
 import { JobsPage } from "./JobsPage";
 import { LoginSection } from "./LoginSection";
 
@@ -117,8 +118,13 @@ function App() {
       case Route.Books:
         return (
           <UserContext value={user}>
-            <BooksPage
-              books={books}
+            <BooksPage books={books} />
+          </UserContext>
+        );
+      case Route.Series:
+        return (
+          <UserContext value={user}>
+            <SeriesPage
               series={series}
               refreshBooksAndSeries={fetchBooksAndSeries}
               refreshJobs={fetchJobs}
@@ -141,6 +147,7 @@ function App() {
         <UI.Title order={3}>Book Series Tracker</UI.Title>
 
         <RouteLink route={Route.Books}>Books</RouteLink>
+        <RouteLink route={Route.Series}>Series</RouteLink>
         {showJobsPage && <RouteLink route={Route.Jobs}>Jobs</RouteLink>}
 
         <UI.Flex gap="sm" ml="auto" align="center">

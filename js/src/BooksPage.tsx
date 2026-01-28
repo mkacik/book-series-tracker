@@ -1,27 +1,43 @@
 import React from "react";
-import { Book, BookSeries } from "./generated/types";
-import { BooksSection } from "./BooksSection";
-import { SeriesSection } from "./SeriesSection";
+import { Book } from "./generated/types";
 
-export function BooksPage({
-  books,
-  series,
-  refreshBooksAndSeries,
-  refreshJobs,
-}: {
-  books: Array<Book>;
-  series: Array<BookSeries>;
-  refreshBooksAndSeries: () => void;
-  refreshJobs: () => void;
-}) {
+import * as UI from "./UI";
+
+function BookListItem({ book }: { book: Book }) {
+  const title =
+    book.release_date !== null
+      ? `${book.release_date}: ${book.title}`
+      : book.title;
+
+  return (
+    <UI.Flex direction="column">
+      <UI.Title order={4}>{title}</UI.Title>
+      by {book.author}
+      <UI.Anchor href={"https://www.amazon.com/gp/product/" + book.asin}>
+        {book.asin}
+      </UI.Anchor>
+    </UI.Flex>
+  );
+}
+
+function BookList({ books }: { books: Array<Book> }) {
+  if (books.length == 0) {
+    return "No upcoming books yet.";
+  }
+
   return (
     <>
-      <BooksSection books={books} />
-      <SeriesSection
-        series={series}
-        refreshBooksAndSeries={refreshBooksAndSeries}
-        refreshJobs={refreshJobs}
-      />
+      {books.map((book, index) => (
+        <BookListItem key={index} book={book} />
+      ))}
     </>
+  );
+}
+
+export function BooksPage({ books }: { books: Array<Book> }) {
+  return (
+    <UI.Section title="Upcoming Books">
+      <BookList books={books} />
+    </UI.Section>
   );
 }

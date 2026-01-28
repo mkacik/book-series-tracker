@@ -15,6 +15,7 @@ export enum BackendRoute {
 
 export enum Route {
   Books = "/",
+  Series = "/series",
   Jobs = "/jobs",
 }
 
