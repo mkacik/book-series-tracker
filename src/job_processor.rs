@@ -2,6 +2,7 @@ use anyhow;
 use chrono::Month;
 use log;
 use regex::Regex;
+use std::collections::HashMap;
 use std::error::Error;
 use std::time::Duration;
 use thirtyfour::prelude::*;
@@ -13,20 +14,29 @@ use crate::database::Database;
 
 const POST_CLICK_WAIT_SECONDS: u64 = 10;
 
-struct ScrapePageResult {
+struct ScrapeSeriesPageResult {
     series: BookSeries,
     books: Vec<Book>,
 }
 
 pub async fn scrape_and_save(db: &Database, asin: String) -> anyhow::Result<()> {
-    let result = match set_up_and_scrape_url(asin).await {
+    let local_books: HashMap<String, Book> = Book::fetch_by_series_asin(db, &asin)
+      .await?
+      .into_iter()
+      .map(|book| (String::from(&book.asin), book))
+      .collect();
+
+    let result = match set_up_and_scrape_series_page(asin).await {
         Ok(value) => value,
         Err(e) => return Err(anyhow::anyhow!(e)),
     };
 
     result.series.save(db).await?;
-    for book in result.books.iter() {
-        book.save(db).await?;
+
+    for remote_book in result.books.iter() {
+        if !local_books.contains_key(&remote_book.asin) {
+          remote_book.save(db).await?;
+        }
     }
 
     Ok(())
@@ -39,24 +49,24 @@ async fn get_webdriver() -> Result<WebDriver, WebDriverError> {
     WebDriver::new("http://localhost:4444", capabilities).await
 }
 
-async fn set_up_and_scrape_url(
+async fn set_up_and_scrape_series_page(
     asin: String,
-) -> Result<ScrapePageResult, Box<dyn Error + Send + Sync>> {
+) -> Result<ScrapeSeriesPageResult, Box<dyn Error + Send + Sync>> {
     let driver = get_webdriver().await?;
     let url = get_amazon_series_url(&asin);
-    let result = scrape_url(&driver, url, asin, POST_CLICK_WAIT_SECONDS).await;
+    let result = scrape_series_page(&driver, url, asin, POST_CLICK_WAIT_SECONDS).await;
     // regardless wether parsing was sucessful or not, need to clean up the browser window we used
     driver.quit().await?;
 
     result
 }
 
-async fn scrape_url(
+async fn scrape_series_page(
     driver: &WebDriver,
     url: String,
     series_asin: String,
     sleep_seconds: u64,
-) -> Result<ScrapePageResult, Box<dyn Error + Send + Sync>> {
+) -> Result<ScrapeSeriesPageResult, Box<dyn Error + Send + Sync>> {
     driver.goto(url).await?;
     // 0. Sleep to let remote content load
     sleep(Duration::new(sleep_seconds, 0)).await;
@@ -97,14 +107,18 @@ async fn scrape_url(
     let mut books: Vec<Book> = Vec::new();
     // 4. For each child:
     for elem_book in elem_all_books.iter() {
-        // 4a. Find release date, by class name: a-color-success. If missing, proceed to next element.
-        let elem_release_date = match elem_book.find(By::ClassName("a-color-success")).await {
-            Err(_) => continue,
-            Ok(val) => val,
+        // 4a. Find release date, by class name: a-color-success. If missing, book already has been
+        // released, and date is not available on this page.
+        let release_date = match elem_book.find(By::ClassName("a-color-success")).await {
+            Ok(elem_release_date) => {
+              let maybe_release_date = elem_release_date.inner_html().await?;
+              log::debug!("Book release date: '{}'", &maybe_release_date);
+              let release_date = parse_date(maybe_release_date).unwrap();
+
+              Some(release_date)
+            },
+            Err(_) => None,
         };
-        let maybe_release_date = elem_release_date.inner_html().await?;
-        log::debug!("Book release date: '{}'", &maybe_release_date);
-        let release_date = Some(parse_date(maybe_release_date).unwrap());
 
         // 4b. Find ordinal by class name: series-childAsin-count
         let elem_ordinal = elem_book
@@ -153,7 +167,7 @@ async fn scrape_url(
         books.push(book);
     }
 
-    Ok(ScrapePageResult {
+    Ok(ScrapeSeriesPageResult {
         series: BookSeries {
             name: series_name,
             asin: series_asin,
@@ -286,7 +300,7 @@ mod tests {
 
     #[tokio::test]
     #[ignore = "requires geckodriver running"]
-    async fn test_scrape_url() {
+    async fn test_scrape_series_page() {
         let caps = DesiredCapabilities::firefox();
         let driver = match WebDriver::new("http://localhost:4444", caps).await {
             Ok(val) => val,
@@ -298,7 +312,12 @@ mod tests {
         let url = format!("file:///{}/sanitizer/output.html", cwd.display());
         let series_asin = "TESTASIN";
 
-        let maybe_result = scrape_url(&driver, url.to_string(), series_asin.to_string(), 0).await;
+        let maybe_result = scrape_series_page(
+          &driver,
+          url.to_string(),
+          series_asin.to_string(),
+          0
+        ).await;
 
         driver.quit().await.unwrap();
 
@@ -307,6 +326,6 @@ mod tests {
 
         assert_eq!(result.series.name, "Backyard Starship");
         assert_eq!(result.series.asin, series_asin);
-        assert_eq!(result.books.len(), 1);
+        assert_eq!(result.books.len(), 31);
     }
 }

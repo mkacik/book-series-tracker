@@ -64,6 +64,21 @@ impl Book {
         Ok(())
     }
 
+    pub async fn fetch_by_series_asin(
+      db: &Database,
+      series_asin: &str,
+    ) -> anyhow::Result<Vec<Book>> {
+        let mut conn = db.acquire_db_conn().await?;
+        let books = sqlx::query_as::<_, Book>(
+            "SELECT * FROM books WHERE series_asin = ?1"
+        )
+        .bind(series_asin)
+        .fetch_all(&mut *conn)
+        .await?;
+
+        Ok(books)
+    }
+
     pub async fn fetch_all(db: &Database) -> anyhow::Result<GetAllBooksResult> {
         let mut conn = db.acquire_db_conn().await?;
         let books = sqlx::query_as::<_, Book>("SELECT * FROM books ORDER BY release_date ASC")

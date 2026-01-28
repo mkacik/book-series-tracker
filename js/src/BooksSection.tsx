@@ -4,7 +4,11 @@ import { Book } from "./generated/types";
 import * as UI from "./UI";
 
 function BookListItem({ book }: { book: Book }) {
-  const title = `${book.release_date}: ${book.title}`;
+  const title =
+    book.release_date !== null
+      ? `${book.release_date}: ${book.title}`
+      : book.title;
+
   return (
     <UI.Flex direction="column">
       <UI.Title order={4}>{title}</UI.Title>
