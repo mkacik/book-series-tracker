@@ -11,17 +11,11 @@ import {
 } from "./generated/types";
 import { User, UserContext } from "./User";
 import { isJobProcessing } from "./Job";
-import {
-  BackendRoute,
-  Route,
-  RouteLink,
-  RouteNotFound,
-  usePathname,
-} from "./Navigation";
+import { BackendRoute, Route, RouteLink, usePathname } from "./Navigation";
 import { BooksPage } from "./BooksPage";
 import { SeriesPage } from "./SeriesPage";
 import { JobsPage } from "./JobsPage";
-import { LoginSection } from "./LoginSection";
+import { LoginSection, LogoutSection } from "./LoginSection";
 
 import * as UI from "./UI";
 
@@ -44,6 +38,10 @@ function App() {
         setUser(new User(null));
       });
   };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const fetchBooksAndSeries = () => {
     fetch(BackendRoute.Books)
@@ -83,10 +81,9 @@ function App() {
   };
 
   useEffect(() => {
-    fetchUser();
     fetchBooksAndSeries();
     fetchJobs();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (jobs.length === 0) {
@@ -107,11 +104,15 @@ function App() {
     };
   }, [jobs]);
 
-  const showJobsPage = user !== null && user.isLoggedIn();
+  const userLoggedIn = user !== null && user.isLoggedIn();
 
   const getPageContent = () => {
     if (user === null) {
-      return "Loading...";
+      return <UI.PageLoading />;
+    }
+
+    if (!userLoggedIn) {
+      return <LoginSection setUser={setUser} />;
     }
 
     switch (route) {
@@ -132,26 +133,30 @@ function App() {
           </UserContext>
         );
       case Route.Jobs:
-        if (showJobsPage) {
-          return <JobsPage jobs={jobs} refreshJobs={fetchJobs} />;
-        }
+        return <JobsPage jobs={jobs} refreshJobs={fetchJobs} />;
       // break omitted: fallback to 404
       default:
-        return <RouteNotFound />;
+        return <UI.PageNotFound />;
     }
   };
+
+  const routeLinks = userLoggedIn && (
+    <>
+      <RouteLink route={Route.Books}>Books</RouteLink>
+      <RouteLink route={Route.Series}>Series</RouteLink>
+      <RouteLink route={Route.Jobs}>Jobs</RouteLink>
+    </>
+  );
 
   return (
     <UI.Layout>
       <UI.Header>
         <UI.Title order={3}>Book Series Tracker</UI.Title>
 
-        <RouteLink route={Route.Books}>Books</RouteLink>
-        <RouteLink route={Route.Series}>Series</RouteLink>
-        {showJobsPage && <RouteLink route={Route.Jobs}>Jobs</RouteLink>}
+        {routeLinks}
 
         <UI.Flex gap="sm" ml="auto" align="center">
-          <LoginSection user={user} setUser={setUser} />
+          <LogoutSection user={user} setUser={setUser} />
         </UI.Flex>
       </UI.Header>
 

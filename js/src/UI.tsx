@@ -3,10 +3,13 @@ import {
   createTheme,
   ActionIcon,
   AppShell,
+  Center,
   Flex,
   List,
+  Loader,
   Space,
   Title,
+  Text,
   MantineProvider,
 } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
@@ -36,7 +39,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export function Header({ children }: { children: React.ReactNode }) {
   return (
     <AppShell.Header>
-      <Flex pl="md" pr="md" pt="xs" pb="xs" gap="lg" align="center">
+      <Flex pl="md" pr="md" pt="xs" pb="xs" gap="lg" align="center" h="100%">
         {children}
       </Flex>
     </AppShell.Header>
@@ -76,6 +79,24 @@ export function DeleteButton({ onClick }: { onClick: () => void }) {
     <ActionIcon variant="subtle" size="sm" onClick={onClick}>
       <IconTrash style={{ width: "70%", height: "70%" }} stroke={1.5} />
     </ActionIcon>
+  );
+}
+
+export function PageLoading() {
+  return (
+    <Center h="100%">
+      <Loader />
+    </Center>
+  );
+}
+
+export function PageNotFound() {
+  return (
+    <Center>
+      <Text c="dimmed" size="xl">
+        Page not found
+      </Text>
+    </Center>
   );
 }
 

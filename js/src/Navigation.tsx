@@ -56,13 +56,3 @@ export function RouteLink({
     </UI.Button>
   );
 }
-
-export function RouteNotFound() {
-  return (
-    <UI.Center>
-      <UI.Text c="dimmed" size="xl">
-        Page Not Found
-      </UI.Text>
-    </UI.Center>
-  );
-}

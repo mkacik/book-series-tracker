@@ -7,17 +7,21 @@ import * as UI from "./UI";
 
 type SetUserHandler = (user: User | null) => void;
 
-function LoginError() {
+function LoginError({ dismiss }: { dismiss: () => void }) {
   const icon = <UI.IconAlertTriangle />;
   return (
-    <UI.Alert color="red" icon={icon} title="Could not log in">
-      Please double check your username and password and try again.
-    </UI.Alert>
+    <UI.Alert
+      color="red"
+      icon={icon}
+      title="Login failed"
+      withCloseButton
+      onClose={dismiss}
+      p="xs"
+    ></UI.Alert>
   );
 }
 
-function LoginButton({ setUser }: { setUser: SetUserHandler }) {
-  const [opened, setOpened] = useState<boolean>(false);
+function LoginForm({ setUser }: { setUser: SetUserHandler }) {
   const [error, setError] = useState<boolean>(false);
 
   const onSubmit = async (e: React.SyntheticEvent) => {
@@ -38,7 +42,6 @@ function LoginButton({ setUser }: { setUser: SetUserHandler }) {
       const user = result as { username: string };
 
       setError(false);
-      setOpened(false);
       setUser(new User(user.username));
     } catch (_) {
       setError(true);
@@ -46,29 +49,28 @@ function LoginButton({ setUser }: { setUser: SetUserHandler }) {
   };
 
   return (
-    <>
-      <UI.Modal
-        title="Account login"
-        opened={opened}
-        onClose={() => setOpened(false)}
-        overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
-        }}
-      >
-        <form onSubmit={onSubmit}>
-          {error && <LoginError />}
-          <UI.TextInput label="Username" name="username" />
-          <UI.PasswordInput label="Password" name="password" />
-          <UI.Space h="xl" />
-          <UI.Button type="submit" fullWidth>
-            Log In
-          </UI.Button>
-        </form>
-      </UI.Modal>
+    <UI.Flex direction="column" gap="md">
+      {error && <LoginError dismiss={() => setError(false)} />}
+      <form onSubmit={onSubmit}>
+        <UI.TextInput label="Username" name="username" />
+        <UI.PasswordInput label="Password" name="password" />
+        <UI.Space h="xl" />
+        <UI.Button type="submit" fullWidth>
+          Log In
+        </UI.Button>
+      </form>
+    </UI.Flex>
+  );
+}
 
-      <UI.Button onClick={() => setOpened(true)}>Login</UI.Button>
-    </>
+export function LoginSection({ setUser }: { setUser: SetUserHandler }) {
+  return (
+    <UI.Center>
+      <UI.Flex direction="column" gap="md" w="440">
+        <UI.Text>Account login</UI.Text>
+        <LoginForm setUser={setUser} />
+      </UI.Flex>
+    </UI.Center>
   );
 }
 
@@ -89,23 +91,22 @@ function LogoutButton({ setUser }: { setUser: SetUserHandler }) {
   );
 }
 
-export function LoginSection({
+export function LogoutSection({
   user,
   setUser,
 }: {
   user: User | null;
   setUser: SetUserHandler;
 }) {
-  if (user === null) {
+  const loggedIn = user !== null && user.isLoggedIn();
+  if (!loggedIn) {
     return null;
   }
-  if (user.isLoggedIn()) {
-    return (
-      <>
-        Hi {user.getName()}!
-        <LogoutButton setUser={setUser} />
-      </>
-    );
-  }
-  return <LoginButton setUser={setUser} />;
+
+  return (
+    <>
+      Hi {user.getName()}!
+      <LogoutButton setUser={setUser} />
+    </>
+  );
 }
