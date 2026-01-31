@@ -5,7 +5,9 @@ use serde::Deserialize;
 use serde_json::to_string as to_json_string;
 use std::sync::Arc;
 
-use crate::books::{AddSeriesResult, Book, BookSeries};
+use crate::books::Book;
+use crate::series::{AddSeriesResult, BookSeries};
+use crate::subscriptions::Subscription;
 use crate::common::validate_asin;
 use crate::database::Database;
 use crate::job_server::JobServer;
@@ -13,8 +15,11 @@ use crate::user::User;
 
 
 #[get("/books")]
-pub async fn books_get_controller(db: &State<Arc<Database>>) -> Option<(ContentType, String)> {
-    match Book::fetch_all(db).await {
+pub async fn books_get_controller(
+    db: &State<Arc<Database>>,
+    user: &User,
+) -> Option<(ContentType, String)> {
+    match Book::fetch_by_user(db, user).await {
         Ok(result) => match to_json_string(&result) {
             Ok(json) => Some((ContentType::JSON, json)),
             Err(_) => None,
@@ -26,6 +31,7 @@ pub async fn books_get_controller(db: &State<Arc<Database>>) -> Option<(ContentT
 #[get("/jobs")]
 pub async fn jobs_get_controller(
     job_server: &State<Arc<JobServer>>,
+    _user: &User,
 ) -> Option<(ContentType, String)> {
     match job_server.get_jobs().await {
         Ok(result) => match to_json_string(&result) {
@@ -38,7 +44,7 @@ pub async fn jobs_get_controller(
 
 pub async fn enqueue_all(db: &Database, job_server: &JobServer) -> anyhow::Result<()> {
     let all_series = BookSeries::fetch_all(db).await?;
-    for series in all_series.series {
+    for series in all_series {
         job_server.add_job(series.asin).await?;
     }
 
@@ -69,8 +75,11 @@ pub async fn jobs_delete_controller(
 }
 
 #[get("/series")]
-pub async fn series_get_controller(db: &State<Arc<Database>>) -> Option<(ContentType, String)> {
-    match BookSeries::fetch_all(db).await {
+pub async fn series_get_controller(
+  db: &State<Arc<Database>>,
+  user: &User
+) -> Option<(ContentType, String)> {
+    match BookSeries::fetch_by_user(db, user).await {
         Ok(result) => match to_json_string(&result) {
             Ok(json) => Some((ContentType::JSON, json)),
             Err(_) => None,
@@ -136,4 +145,36 @@ pub async fn series_delete_controller(
         Ok(_) => Some(""),
         Err(_) => None,
     }
+}
+
+#[post("/series/subscribe/<asin>")]
+pub async fn subscribe(
+    db: &State<Arc<Database>>,
+    user: &User,
+    asin: String,
+) -> Option<&'static str> {
+  if BookSeries::fetch_by_asin(db, &asin).await.is_err() {
+      return None;
+  }
+
+  match Subscription::add(db, user, &asin).await {
+      Ok(_) => Some(""),
+      Err(_) => None,
+  }
+}
+
+#[post("/series/unsubscribe/<asin>")]
+pub async fn unsubscribe(
+    db: &State<Arc<Database>>,
+    user: &User,
+    asin: String,
+) -> Option<&'static str> {
+  if BookSeries::fetch_by_asin(db, &asin).await.is_err() {
+      return None;
+  }
+
+  match Subscription::remove(db, user, &asin).await {
+      Ok(_) => Some(""),
+      Err(_) => None,
+  }
 }

@@ -3,7 +3,8 @@ use std::fs;
 use std::io;
 use ts_rs::{ExportError, TS};
 
-use crate::books::{AddSeriesResult, GetAllBooksResult, GetAllSeriesResult};
+use crate::books::GetAllBooksResult;
+use crate::series::{AddSeriesResult, GetAllSeriesResult};
 use crate::job_server::GetAllJobsResult;
 
 fn export_all() -> Result<(), ExportError> {

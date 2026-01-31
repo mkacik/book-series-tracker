@@ -6,18 +6,48 @@ import { BackendRoute } from "./Navigation";
 
 import * as UI from "./UI";
 
-type DeleteSeriesHandler = (asin: string) => void;
-
-function SeriesListItem({
+function SubscribeButton({
   series,
-  deleteSeriesHandler,
-  showDeleteButton,
+  refreshSeries,
 }: {
   series: BookSeries;
-  deleteSeriesHandler: DeleteSeriesHandler;
-  showDeleteButton: boolean;
+  refreshSeries: () => void;
 }) {
-  const deleteSeries = (): void => {
+  const toggleSubscription = () => {
+    const route = series.subscribed
+      ? BackendRoute.Unsubscribe
+      : BackendRoute.Subscribe;
+    const url = `${route}/${series.asin}`;
+    fetch(url, { method: "POST" }).then((response) => {
+      if (response.ok) {
+        refreshSeries();
+      } else {
+        alert("Error while subscribing to series.");
+      }
+    });
+  };
+
+  return (
+    <UI.Switch
+      size="sm"
+      checked={series.subscribed}
+      onChange={toggleSubscription}
+    />
+  );
+}
+
+function DeleteButton({
+  series,
+  refreshSeries,
+}: {
+  series: BookSeries;
+  refreshSeries: () => void;
+}) {
+  if (series.subscribers > 0) {
+    return null;
+  }
+
+  const deleteSeries = () => {
     const warning =
       `Do you really want to stop tracking "${series.name}" series? This will ` +
       "delete all its books from calendar. If you re-add the series later, books " +
@@ -25,46 +55,73 @@ function SeriesListItem({
     if (confirm(warning) != true) {
       return;
     }
-    deleteSeriesHandler(series.asin);
+
+    fetch(BackendRoute.Series, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      },
+      body: JSON.stringify({ asin: series.asin }),
+    }).then((response) => {
+      if (response.ok) {
+        refreshSeries();
+      } else {
+        alert(
+          "Error while deleting series, check if server is running and try again.",
+        );
+      }
+    });
   };
 
+  return <UI.DeleteButton onClick={deleteSeries} />;
+}
+
+function SeriesListItem({
+  series,
+  refreshSeries,
+}: {
+  series: BookSeries;
+  refreshSeries: () => void;
+}) {
   return (
-    <UI.ListItem>
-      <UI.Flex gap="0.4rem">
+    <UI.Flex gap="0.4em" align="center">
+      <SubscribeButton series={series} refreshSeries={refreshSeries} />
+
+      <UI.Text size="lg" c={series.subscribed ? undefined : "dimmed"}>
         {series.name}
-        <UI.Anchor href={"https://www.amazon.com/dp/" + series.asin}>
-          {series.asin}
-        </UI.Anchor>
-        {showDeleteButton && <UI.DeleteButton onClick={deleteSeries} />}
-      </UI.Flex>
-    </UI.ListItem>
+      </UI.Text>
+
+      <UI.Anchor href={"https://www.amazon.com/dp/" + series.asin}>
+        {series.asin}
+      </UI.Anchor>
+
+      <DeleteButton series={series} refreshSeries={refreshSeries} />
+    </UI.Flex>
   );
 }
 
 function SeriesList({
   series,
-  deleteSeriesHandler,
-  showDeleteButton,
+  refreshSeries,
 }: {
   series: Array<BookSeries>;
-  deleteSeriesHandler: DeleteSeriesHandler;
-  showDeleteButton: boolean;
+  refreshSeries: () => void;
 }) {
   if (series.length == 0) {
     return "No series tracked yet. Add series ASIN to start.";
   }
 
   return (
-    <UI.List>
+    <UI.Flex direction="column" gap="0.4em">
+      <UI.Title order={4}>Subscribe to already tracked series</UI.Title>
       {series.map((item, index) => (
         <SeriesListItem
           key={index}
           series={item}
-          deleteSeriesHandler={deleteSeriesHandler}
-          showDeleteButton={showDeleteButton}
+          refreshSeries={refreshSeries}
         />
       ))}
-    </UI.List>
+    </UI.Flex>
   );
 }
 
@@ -121,34 +178,11 @@ export function SeriesPage({
   refreshBooksAndSeries: () => void;
   refreshJobs: () => void;
 }) {
-  const user = useUserContext();
-
-  const deleteSeries = (asin: string): void => {
-    fetch(BackendRoute.Series, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({ asin: asin }),
-    }).then((response) => {
-      if (response.ok) {
-        refreshBooksAndSeries();
-      } else {
-        alert(
-          "Error while deleting series, check if server is running and try again.",
-        );
-      }
-    });
-  };
-
   return (
     <UI.Section title="Tracked Series">
-      <SeriesList
-        series={series}
-        deleteSeriesHandler={deleteSeries}
-        showDeleteButton={user.isLoggedIn()}
-      />
-      {user.isLoggedIn() && <AddSeriesForm refreshJobs={refreshJobs} />}
+      <SeriesList series={series} refreshSeries={refreshBooksAndSeries} />
+      <UI.Space h="xs" />
+      <AddSeriesForm refreshJobs={refreshJobs} />
     </UI.Section>
   );
 }

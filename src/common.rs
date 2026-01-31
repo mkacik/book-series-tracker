@@ -3,6 +3,8 @@ use regex::Regex;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::time::{sleep, Duration};
 
+pub const TS_FILE: &str = "types.ts";
+
 pub fn now() -> i64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)

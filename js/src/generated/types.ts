@@ -4,7 +4,7 @@ export type AddSeriesResult = { job_id: number | null, error: string | null, };
 
 export type Book = { asin: string, series_asin: string, ordinal: number, title: string, author: string, release_date: string | null, time_first_seen: number, };
 
-export type BookSeries = { asin: string, name: string, time_first_seen: bigint, };
+export type BookSeries = { subscribed: boolean, subscribers: number, asin: string, name: string, time_first_seen: bigint, };
 
 export type GetAllBooksResult = { books: Array<Book>, };
 

@@ -18,6 +18,8 @@ mod job_server;
 mod login_routes;
 mod passwords;
 mod routes;
+mod series;
+mod subscriptions;
 mod user;
 
 use crate::crypto::init_crypto;
@@ -98,6 +100,8 @@ async fn main() -> anyhow::Result<()> {
                         api_routes::series_delete_controller,
                         api_routes::series_get_controller,
                         api_routes::series_post_controller,
+                        api_routes::subscribe,
+                        api_routes::unsubscribe,
                     ],
                 )
                 .mount("/static", FileServer::from(relative!("www/static")))

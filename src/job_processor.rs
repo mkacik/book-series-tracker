@@ -8,7 +8,8 @@ use std::time::Duration;
 use thirtyfour::prelude::*;
 use thirtyfour::support::sleep;
 
-use crate::books::{Book, BookSeries};
+use crate::books::Book;
+use crate::series::BookSeries;
 use crate::common::now;
 use crate::database::Database;
 

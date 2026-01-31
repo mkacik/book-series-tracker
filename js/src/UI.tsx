@@ -112,6 +112,7 @@ export {
   Modal,
   PasswordInput,
   Space,
+  Switch,
   Table,
   Text,
   TextInput,
