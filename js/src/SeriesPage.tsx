@@ -1,7 +1,6 @@
 import React from "react";
 import { useState } from "react";
 import { BookSeries } from "./generated/types";
-import { useUserContext } from "./User";
 import { BackendRoute } from "./Navigation";
 
 import * as UI from "./UI";
@@ -13,18 +12,17 @@ function SubscribeButton({
   series: BookSeries;
   refreshSeries: () => void;
 }) {
-  const toggleSubscription = () => {
+  const toggleSubscription = async () => {
     const route = series.subscribed
       ? BackendRoute.Unsubscribe
       : BackendRoute.Subscribe;
     const url = `${route}/${series.asin}`;
-    fetch(url, { method: "POST" }).then((response) => {
-      if (response.ok) {
-        refreshSeries();
-      } else {
-        alert("Error while subscribing to series.");
-      }
-    });
+    const response = await fetch(url, { method: "POST" });
+    if (!response.ok) {
+      alert("Error while subscribing to series.");
+    }
+
+    refreshSeries();
   };
 
   return (
@@ -47,7 +45,7 @@ function DeleteButton({
     return null;
   }
 
-  const deleteSeries = () => {
+  const deleteSeries = async () => {
     const warning =
       `Do you really want to stop tracking "${series.name}" series? This will ` +
       "delete all its books from calendar. If you re-add the series later, books " +
@@ -56,21 +54,13 @@ function DeleteButton({
       return;
     }
 
-    fetch(BackendRoute.Series, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({ asin: series.asin }),
-    }).then((response) => {
-      if (response.ok) {
-        refreshSeries();
-      } else {
-        alert(
-          "Error while deleting series, check if server is running and try again.",
-        );
-      }
-    });
+    const url = `${BackendRoute.Series}/${series.asin}`;
+    const response = await fetch(url, { method: "DELETE" });
+    if (!response.ok) {
+      alert( "Error while deleting series, check if server is running.");
+    }
+
+    refreshSeries();
   };
 
   return <UI.DeleteButton onClick={deleteSeries} />;
@@ -128,28 +118,26 @@ function SeriesList({
 function AddSeriesForm({ refreshJobs }: { refreshJobs: () => void }) {
   const [asin, setAsin] = useState("");
 
-  const addSeries = (asin: string): void => {
-    fetch(BackendRoute.Series, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({ asin: asin }),
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        const jobId = result.job_id;
-        if (jobId !== undefined && jobId != null) {
-          setAsin("");
-          refreshJobs();
-          alert(`Submitted job ${jobId}. Go to Jobs tab to check progress.`);
-        } else {
-          alert("Error while submitting job: " + result.error);
-        }
-      })
-      .catch((error) => {
-        alert("Error while submitting job: " + error);
-      });
+  const addSeries = async () => {
+    try {
+      const url = `${BackendRoute.Series}/${asin}`;
+      const response = await fetch(url, { method: "POST" });
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      const result = await response.json();
+      const jobId = result.job_id;
+      if (jobId === undefined || jobId === null) {
+        throw new Error(result.error);
+      }
+
+      setAsin("");
+      refreshJobs();
+      alert(`Submitted job ${jobId}. Go to Jobs tab to check progress.`);
+    } catch (error) {
+      alert("Error while submitting job: " + error);
+    }
   };
 
   return (
@@ -161,7 +149,7 @@ function AddSeriesForm({ refreshJobs }: { refreshJobs: () => void }) {
           onChange={(event) => setAsin(event.currentTarget.value)}
           placeholder="Series ASIN"
         />
-        <UI.Button onClick={() => addSeries(asin)} variant="outline">
+        <UI.Button onClick={addSeries} variant="outline">
           add
         </UI.Button>
       </UI.Flex>
