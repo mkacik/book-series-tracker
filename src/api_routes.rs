@@ -4,12 +4,11 @@ use serde_json::to_string as to_json_string;
 use std::sync::Arc;
 
 use crate::books::Book;
-use crate::common::validate_asin;
 use crate::database::Database;
 use crate::job_server::JobServer;
-use crate::series::{AddSeriesResult, BookSeries};
-use crate::subscriptions::Subscription;
+use crate::series::BookSeries;
 use crate::user::User;
+
 
 #[get("/books")]
 pub async fn books_get_controller(
@@ -66,106 +65,6 @@ pub async fn jobs_delete_controller(
     _user: &User,
 ) -> Option<&'static str> {
     match job_server.delete_all_jobs().await {
-        Ok(_) => Some(""),
-        Err(_) => None,
-    }
-}
-
-#[get("/series")]
-pub async fn series_get_controller(
-    db: &State<Arc<Database>>,
-    user: &User,
-) -> Option<(ContentType, String)> {
-    match BookSeries::fetch_by_user(db, user).await {
-        Ok(result) => match to_json_string(&result) {
-            Ok(json) => Some((ContentType::JSON, json)),
-            Err(_) => None,
-        },
-        Err(_) => None,
-    }
-}
-
-async fn validate_and_add_series(job_server: &JobServer, asin: &str) -> AddSeriesResult {
-    let asin = match validate_asin(asin.trim()) {
-        Ok(asin) => asin,
-        Err(e) => {
-            return AddSeriesResult {
-                job_id: None,
-                error: Some(format!("{}", e)),
-            };
-        }
-    };
-
-    match job_server.add_job(asin).await {
-        Ok(job_id) => AddSeriesResult {
-            job_id: Some(job_id),
-            error: None,
-        },
-        Err(e) => AddSeriesResult {
-            job_id: None,
-            error: Some(format!("{}", e)),
-        },
-    }
-}
-
-#[post("/series/<asin>")]
-pub async fn series_post_controller(
-    job_server: &State<Arc<JobServer>>,
-    _user: &User,
-    asin: String,
-) -> Option<(ContentType, String)> {
-    let result = validate_and_add_series(job_server, &asin).await;
-
-    match to_json_string(&result) {
-        Ok(json) => Some((ContentType::JSON, json)),
-        Err(_) => None,
-    }
-}
-
-#[delete("/series/<asin>")]
-pub async fn series_delete_controller(
-    db: &State<Arc<Database>>,
-    _user: &User,
-    asin: String,
-) -> Option<&'static str> {
-    let asin = match validate_asin(asin.trim()) {
-        Ok(asin) => asin,
-        Err(_) => return None,
-    };
-
-    match BookSeries::delete_by_asin(db, &asin).await {
-        Ok(_) => Some(""),
-        Err(_) => None,
-    }
-}
-
-#[post("/series/subscribe/<asin>")]
-pub async fn subscribe(
-    db: &State<Arc<Database>>,
-    user: &User,
-    asin: String,
-) -> Option<&'static str> {
-    if BookSeries::fetch_by_asin(db, &asin).await.is_err() {
-        return None;
-    }
-
-    match Subscription::add(db, user, &asin).await {
-        Ok(_) => Some(""),
-        Err(_) => None,
-    }
-}
-
-#[post("/series/unsubscribe/<asin>")]
-pub async fn unsubscribe(
-    db: &State<Arc<Database>>,
-    user: &User,
-    asin: String,
-) -> Option<&'static str> {
-    if BookSeries::fetch_by_asin(db, &asin).await.is_err() {
-        return None;
-    }
-
-    match Subscription::remove(db, user, &asin).await {
         Ok(_) => Some(""),
         Err(_) => None,
     }

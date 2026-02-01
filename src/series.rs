@@ -32,8 +32,7 @@ pub struct GetAllSeriesResult {
 #[derive(Serialize, TS, Debug)]
 #[ts(export_to = TS_FILE)]
 pub struct AddSeriesResult {
-    pub job_id: Option<i32>,
-    pub error: Option<String>,
+    pub job_id: i32,
 }
 
 impl BookSeries {

@@ -9,6 +9,7 @@ use std::sync::Arc;
 mod api_routes;
 mod books;
 mod common;
+mod controllers;
 mod credentials;
 mod crypto;
 mod database;
@@ -17,6 +18,7 @@ mod job_processor;
 mod job_server;
 mod login_routes;
 mod passwords;
+mod response;
 mod routes;
 mod series;
 mod subscriptions;
@@ -97,11 +99,11 @@ async fn main() -> anyhow::Result<()> {
                         api_routes::jobs_delete_controller,
                         api_routes::jobs_get_controller,
                         api_routes::jobs_post_controller,
-                        api_routes::series_delete_controller,
-                        api_routes::series_get_controller,
-                        api_routes::series_post_controller,
-                        api_routes::subscribe,
-                        api_routes::unsubscribe,
+                        controllers::series::get_all,
+                        controllers::series::add,
+                        controllers::series::remove,
+                        controllers::series::subscribe,
+                        controllers::series::unsubscribe,
                     ],
                 )
                 .mount("/static", FileServer::from(relative!("www/static")))

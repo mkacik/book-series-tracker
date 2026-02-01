@@ -57,7 +57,7 @@ function DeleteButton({
     const url = `${BackendRoute.Series}/${series.asin}`;
     const response = await fetch(url, { method: "DELETE" });
     if (!response.ok) {
-      alert( "Error while deleting series, check if server is running.");
+      alert("Error while deleting series, check if server is running.");
     }
 
     refreshSeries();
@@ -122,21 +122,22 @@ function AddSeriesForm({ refreshJobs }: { refreshJobs: () => void }) {
     try {
       const url = `${BackendRoute.Series}/${asin}`;
       const response = await fetch(url, { method: "POST" });
-      if (!response.ok) {
-        throw new Error();
-      }
-
       const result = await response.json();
-      const jobId = result.job_id;
-      if (jobId === undefined || jobId === null) {
-        throw new Error(result.error);
+
+      if (
+        result.hasOwnProperty("error") ||
+        !result.hasOwnProperty("job_id")
+      ) {
+        throw new Error(result.error || "UNKNOWN");
       }
 
       setAsin("");
       refreshJobs();
-      alert(`Submitted job ${jobId}. Go to Jobs tab to check progress.`);
+      alert(
+        `Submitted job ${result.job_id}. Go to Jobs tab to check progress.`,
+      );
     } catch (error) {
-      alert("Error while submitting job: " + error);
+      alert("Error while submitting job: " + error.message);
     }
   };
 
