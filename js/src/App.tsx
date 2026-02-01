@@ -27,16 +27,23 @@ function App() {
   const [series, setSeries] = useState<Array<BookSeries>>([]);
   const [jobs, setJobs] = useState<Array<Job>>([]);
 
-  const fetchUser = () => {
-    fetch(BackendRoute.User)
-      .then((response) => response.json())
-      .then((result) => {
-        const user = result as { username: string };
-        setUser(new User(user.username));
-      })
-      .catch((_error) => {
-        setUser(new User(null));
-      });
+  const fetchUser = async () => {
+    try {
+      const response = await fetch(BackendRoute.User);
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      const result = await response.json();
+      if (!result.hasOwnProperty("username")) {
+        throw new Error();
+      }
+
+      const user = result as { username: string };
+      setUser(new User(user.username));
+    } catch (_error) {
+      setUser(new User(null));
+    }
   };
 
   useEffect(() => {
