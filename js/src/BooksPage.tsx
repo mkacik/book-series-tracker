@@ -1,5 +1,5 @@
 import React from "react";
-import { Book } from "./generated/types";
+import { Book, BookSeries } from "./generated/types";
 
 import * as UI from "./UI";
 
@@ -20,24 +20,76 @@ function BookListItem({ book }: { book: Book }) {
   );
 }
 
-function BookList({ books }: { books: Array<Book> }) {
-  if (books.length == 0) {
-    return "No upcoming books yet.";
+function SeriesSection({
+  seriesName,
+  books,
+}: {
+  seriesName: string;
+  books: Array<Book>;
+}) {
+  if (books.length === 0) {
+    return null;
   }
 
   return (
     <>
-      {books.map((book, index) => (
-        <BookListItem key={index} book={book} />
-      ))}
+      <UI.Title order={3}>{seriesName}</UI.Title>
+      <UI.Flex direction="column" gap="sm" ml="lg">
+        {books.toSorted().map((book, index) => (
+          <BookListItem key={index} book={book} />
+        ))}
+      </UI.Flex>
     </>
   );
 }
 
-export function BooksPage({ books }: { books: Array<Book> }) {
+function BookList({
+  books,
+  series,
+}: {
+  books: Array<Book>;
+  series: Array<BookSeries>;
+}) {
+  if (books.length == 0) {
+    return "No upcoming books yet.";
+  }
+
+  const booksBySeries: Map<string, Array<Book>> = new Map();
+
+  for (const book of books) {
+    const series_asin = book.series_asin;
+    if (booksBySeries.has(series_asin)) {
+      booksBySeries.get(series_asin).push(book);
+      continue;
+    }
+    booksBySeries.set(series_asin, [book]);
+  }
+
+  return (
+    <>
+      {series
+        .filter((series) => series.subscribed)
+        .map((series, index) => (
+          <SeriesSection
+            key={index}
+            seriesName={series.name}
+            books={booksBySeries.get(series.asin) || []}
+          />
+        ))}
+    </>
+  );
+}
+
+export function BooksPage({
+  books,
+  series,
+}: {
+  books: Array<Book>;
+  series: Array<BookSeries>;
+}) {
   return (
     <UI.Section title="Upcoming Books">
-      <BookList books={books} />
+      <BookList books={books} series={series} />
     </UI.Section>
   );
 }
