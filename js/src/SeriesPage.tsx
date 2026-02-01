@@ -124,10 +124,7 @@ function AddSeriesForm({ refreshJobs }: { refreshJobs: () => void }) {
       const response = await fetch(url, { method: "POST" });
       const result = await response.json();
 
-      if (
-        result.hasOwnProperty("error") ||
-        !result.hasOwnProperty("job_id")
-      ) {
+      if (result.hasOwnProperty("error") || !result.hasOwnProperty("job_id")) {
         throw new Error(result.error || "UNKNOWN");
       }
 

@@ -1,8 +1,8 @@
 use serde::Serialize;
 use ts_rs::TS;
 
-use crate::database::Database;
 use crate::common::TS_FILE;
+use crate::database::Database;
 use crate::user::User;
 
 #[derive(sqlx::FromRow, Serialize, TS, Debug)]
@@ -49,7 +49,7 @@ impl Book {
         let mut conn = db.acquire_db_conn().await?;
 
         let books = sqlx::query_as::<_, Book>(
-            "SELECT books.* FROM books JOIN subscriptions USING (series_asin) WHERE username = ?1"
+            "SELECT books.* FROM books JOIN subscriptions USING (series_asin) WHERE username = ?1",
         )
         .bind(&user.username)
         .fetch_all(&mut *conn)
@@ -59,18 +59,15 @@ impl Book {
     }
 
     pub async fn fetch_by_series_asin(
-      db: &Database,
-      series_asin: &str,
+        db: &Database,
+        series_asin: &str,
     ) -> anyhow::Result<Vec<Book>> {
         let mut conn = db.acquire_db_conn().await?;
-        let books = sqlx::query_as::<_, Book>(
-            "SELECT * FROM books WHERE series_asin = ?1"
-        )
-        .bind(series_asin)
-        .fetch_all(&mut *conn)
-        .await?;
+        let books = sqlx::query_as::<_, Book>("SELECT * FROM books WHERE series_asin = ?1")
+            .bind(series_asin)
+            .fetch_all(&mut *conn)
+            .await?;
 
         Ok(books)
     }
 }
-

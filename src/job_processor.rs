@@ -9,9 +9,9 @@ use thirtyfour::prelude::*;
 use thirtyfour::support::sleep;
 
 use crate::books::Book;
-use crate::series::BookSeries;
 use crate::common::now;
 use crate::database::Database;
+use crate::series::BookSeries;
 
 const POST_CLICK_WAIT_SECONDS: u64 = 10;
 
@@ -22,10 +22,10 @@ struct ScrapeSeriesPageResult {
 
 pub async fn scrape_and_save(db: &Database, asin: String) -> anyhow::Result<()> {
     let local_books: HashMap<String, Book> = Book::fetch_by_series_asin(db, &asin)
-      .await?
-      .into_iter()
-      .map(|book| (String::from(&book.asin), book))
-      .collect();
+        .await?
+        .into_iter()
+        .map(|book| (String::from(&book.asin), book))
+        .collect();
 
     let result = match set_up_and_scrape_series_page(asin).await {
         Ok(value) => value,
@@ -36,7 +36,7 @@ pub async fn scrape_and_save(db: &Database, asin: String) -> anyhow::Result<()> 
 
     for remote_book in result.books.iter() {
         if !local_books.contains_key(&remote_book.asin) {
-          remote_book.save(db).await?;
+            remote_book.save(db).await?;
         }
     }
 
@@ -112,12 +112,12 @@ async fn scrape_series_page(
         // released, and date is not available on this page.
         let release_date = match elem_book.find(By::ClassName("a-color-success")).await {
             Ok(elem_release_date) => {
-              let maybe_release_date = elem_release_date.inner_html().await?;
-              log::debug!("Book release date: '{}'", &maybe_release_date);
-              let release_date = parse_date(maybe_release_date).unwrap();
+                let maybe_release_date = elem_release_date.inner_html().await?;
+                log::debug!("Book release date: '{}'", &maybe_release_date);
+                let release_date = parse_date(maybe_release_date).unwrap();
 
-              Some(release_date)
-            },
+                Some(release_date)
+            }
             Err(_) => None,
         };
 
@@ -313,12 +313,8 @@ mod tests {
         let url = format!("file:///{}/sanitizer/output.html", cwd.display());
         let series_asin = "TESTASIN";
 
-        let maybe_result = scrape_series_page(
-          &driver,
-          url.to_string(),
-          series_asin.to_string(),
-          0
-        ).await;
+        let maybe_result =
+            scrape_series_page(&driver, url.to_string(), series_asin.to_string(), 0).await;
 
         driver.quit().await.unwrap();
 

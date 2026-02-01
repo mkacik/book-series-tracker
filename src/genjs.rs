@@ -4,8 +4,8 @@ use std::io;
 use ts_rs::{ExportError, TS};
 
 use crate::books::GetAllBooksResult;
-use crate::series::{AddSeriesResult, GetAllSeriesResult};
 use crate::job_server::GetAllJobsResult;
+use crate::series::{AddSeriesResult, GetAllSeriesResult};
 
 fn export_all() -> Result<(), ExportError> {
     // exports type with all dependencies, see https://docs.rs/ts-rs/latest/src/ts_rs/lib.rs.html

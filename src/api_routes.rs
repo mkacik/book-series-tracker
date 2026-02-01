@@ -1,5 +1,5 @@
-use rocket::State;
 use rocket::http::ContentType;
+use rocket::State;
 use serde_json::to_string as to_json_string;
 use std::sync::Arc;
 
@@ -8,7 +8,6 @@ use crate::database::Database;
 use crate::job_server::JobServer;
 use crate::series::BookSeries;
 use crate::user::User;
-
 
 #[get("/books")]
 pub async fn books_get_controller(
