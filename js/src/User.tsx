@@ -2,7 +2,9 @@ export class User {
   username: string | null;
 
   constructor(username: string | null) {
-    this.username = username;
+    // can't trust undefined to not sneak in
+    const sanitized = typeof username === "string" ? username : null;
+    this.username = sanitized;
   }
 
   isLoggedIn() {
@@ -16,3 +18,7 @@ export class User {
     return this.username;
   }
 }
+
+export type GetUserResult = {
+  username: string;
+};

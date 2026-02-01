@@ -9,13 +9,14 @@ import {
   GetAllJobsResult,
   Job,
 } from "./generated/types";
-import { User } from "./User";
+import { GetUserResult, User } from "./User";
 import { isJobProcessing } from "./Job";
 import { BackendRoute, Route, RouteLink, usePathname } from "./Navigation";
 import { BooksPage } from "./BooksPage";
 import { SeriesPage } from "./SeriesPage";
 import { JobsPage } from "./JobsPage";
 import { LoginSection, LogoutSection } from "./LoginSection";
+
 import {
   AppSettings,
   AppSettingsButton,
@@ -24,6 +25,7 @@ import {
 } from "./AppSettings";
 
 import { useMediaQuery } from "@mantine/hooks";
+import { FetchHelper } from "./FetchHelper";
 
 import * as UI from "./UI";
 
@@ -46,51 +48,44 @@ function App() {
   const [series, setSeries] = useState<Array<BookSeries>>([]);
   const [jobs, setJobs] = useState<Array<Job>>([]);
 
+  const fetchHelper = new FetchHelper((_error) => {});
+
   const fetchUser = async () => {
-    try {
-      const response = await fetch(BackendRoute.User);
-      if (!response.ok) {
-        throw new Error();
-      }
+    const onSuccess = (result: GetUserResult) =>
+      setUser(new User(result.username));
+    const onFailure = () => setUser(new User(null));
 
-      const result = await response.json();
-      if (!Object.hasOwn(result, "username")) {
-        throw new Error();
-      }
-
-      const user = result as { username: string };
-      setUser(new User(user.username));
-    } catch (_error) {
-      setUser(new User(null));
-    }
+    await fetchHelper.fetch<GetUserResult>(
+      new Request(BackendRoute.User),
+      onSuccess,
+      onFailure,
+    );
   };
 
   useEffect(() => {
     fetchUser();
   }, []);
 
-  const fetchBooksAndSeries = () => {
-    fetch(BackendRoute.Books)
-      .then((response) => response.json())
-      .then((result) => {
-        const booksResult = result as GetAllBooksResult;
-        setBooks(booksResult.books);
-      });
+  const fetchBooksAndSeries = async () => {
+    const promises = [
+      fetchHelper.fetch<GetAllBooksResult>(
+        new Request(BackendRoute.Books),
+        (result) => setBooks(result.books),
+      ),
+      fetchHelper.fetch<GetAllSeriesResult>(
+        new Request(BackendRoute.Series),
+        (result) => setSeries(result.series),
+      ),
+    ];
 
-    fetch(BackendRoute.Series)
-      .then((response) => response.json())
-      .then((result) => {
-        const seriesResult = result as GetAllSeriesResult;
-        setSeries(seriesResult.series);
-      });
+    await Promise.all(promises);
   };
 
-  const fetchJobs = () => {
-    fetch(BackendRoute.Jobs)
-      .then((response) => response.json())
-      .then((result) => {
-        const jobsResult = result as GetAllJobsResult;
-        const newJobs = jobsResult.jobs;
+  const fetchJobs = async () => {
+    await fetchHelper.fetch<GetAllJobsResult>(
+      new Request(BackendRoute.Jobs),
+      (result) => {
+        const newJobs = result.jobs;
 
         // on any job state transition to done, refetch series and books. Don't need
         // to compare job by job, count of processing jobs is enough.
@@ -103,12 +98,18 @@ function App() {
         }
 
         setJobs(newJobs);
-      });
+      },
+    );
   };
 
   useEffect(() => {
-    fetchBooksAndSeries();
-    fetchJobs();
+    // user is only null while it is being initially fetched. In that case fetching
+    // any data would fail either way, so only trigger data fetch once the user is
+    // non null
+    if (user !== null) {
+      fetchBooksAndSeries();
+      fetchJobs();
+    }
   }, [user]);
 
   useEffect(() => {
