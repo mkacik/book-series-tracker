@@ -183,14 +183,4 @@ impl JobServer {
 
         Ok(GetAllJobsResult { jobs: jobs })
     }
-
-    pub async fn delete_all_jobs(&self) -> anyhow::Result<()> {
-        let mut conn = self.database.acquire_db_conn().await?;
-
-        sqlx::query!("DELETE FROM jobs WHERE status IN ('FAILED', 'SUCCESSFUL')")
-            .execute(&mut *conn)
-            .await?;
-
-        Ok(())
-    }
 }

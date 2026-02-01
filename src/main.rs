@@ -6,7 +6,6 @@ use rocket::fs::{relative, FileServer};
 use std::env;
 use std::sync::Arc;
 
-mod api_routes;
 mod books;
 mod common;
 mod controllers;
@@ -58,7 +57,7 @@ fn spawn_thread_for_daily_scrape(database: Arc<Database>, job_server: Arc<JobSer
     tokio::spawn(async move {
         loop {
             common::sleep_seconds(86400).await;
-            let _ = api_routes::enqueue_all(&database, &job_server).await;
+            let _ = controllers::jobs::enqueue_all(&database, &job_server).await;
         }
     });
 }
@@ -91,10 +90,9 @@ async fn main() -> anyhow::Result<()> {
                 .mount(
                     "/api",
                     routes![
-                        api_routes::books_get_controller,
-                        api_routes::jobs_delete_controller,
-                        api_routes::jobs_get_controller,
-                        api_routes::jobs_post_controller,
+                        controllers::books::get_all,
+                        controllers::jobs::get_all,
+                        controllers::jobs::scrape_all_series,
                         controllers::login::me,
                         controllers::login::login,
                         controllers::login::logout,
