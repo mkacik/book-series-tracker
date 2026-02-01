@@ -8,6 +8,7 @@ use ts_rs::TS;
 pub enum ApiResponse {
     Success,
     Data { data: String },
+    NotFound,
     BadRequest { message: String },
     ServerError { message: String },
 }
@@ -22,6 +23,11 @@ impl<'r> Responder<'r, 'static> for ApiResponse {
 
             ApiResponse::Data { data } => Response::build_from(data.respond_to(req)?)
                 .status(Status::Ok)
+                .header(ContentType::JSON)
+                .ok(),
+
+            ApiResponse::NotFound => Response::build_from("{}".respond_to(req)?)
+                .status(Status::NotFound)
                 .header(ContentType::JSON)
                 .ok(),
 
@@ -47,22 +53,20 @@ impl<'r> Responder<'r, 'static> for ApiResponse {
 }
 
 impl ApiResponse {
-  pub fn from_object<T: Serialize + TS>(object: T) -> ApiResponse {
-    let serialized = match to_string(&object) {
-      Ok(value) => value,
-      Err(error) => return ApiResponse::from_error(anyhow::anyhow!(error)),
-    };
+    pub fn from_object<T: Serialize + TS>(object: T) -> ApiResponse {
+        let serialized = match to_string(&object) {
+            Ok(value) => value,
+            Err(error) => return ApiResponse::from_error(anyhow::anyhow!(error)),
+        };
 
-    ApiResponse::Data {
-      data: serialized
+        ApiResponse::Data { data: serialized }
     }
-  }
 
-  pub fn from_error(error: anyhow::Error) -> ApiResponse {
-    ApiResponse::ServerError {
-      message: error.to_string()
+    pub fn from_error(error: anyhow::Error) -> ApiResponse {
+        ApiResponse::ServerError {
+            message: error.to_string(),
+        }
     }
-  }
 }
 
 fn wrap_error(error_message: &str) -> String {

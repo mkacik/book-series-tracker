@@ -16,7 +16,6 @@ mod database;
 mod genjs;
 mod job_processor;
 mod job_server;
-mod login_routes;
 mod passwords;
 mod response;
 mod routes;
@@ -92,13 +91,13 @@ async fn main() -> anyhow::Result<()> {
                 .mount(
                     "/api",
                     routes![
-                        login_routes::me,
-                        login_routes::login,
-                        login_routes::logout,
                         api_routes::books_get_controller,
                         api_routes::jobs_delete_controller,
                         api_routes::jobs_get_controller,
                         api_routes::jobs_post_controller,
+                        controllers::login::me,
+                        controllers::login::login,
+                        controllers::login::logout,
                         controllers::series::get_all,
                         controllers::series::add,
                         controllers::series::remove,

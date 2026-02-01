@@ -3,11 +3,18 @@ use rocket::request::{FromRequest, Outcome, Request};
 use rocket::State;
 use serde::Serialize;
 use std::sync::Arc;
+use ts_rs::TS;
 
+use crate::common::TS_FILE;
 use crate::credentials::Credentials;
 use crate::database::Database;
 
-#[derive(Serialize)]
+/* This struct is used as request guard to ensure logged in user, and on the
+frontend to display username, and is returned by /me and /login api routes. If
+at any point need arises to add more fields here, remove TS trait, and create
+lightweight object with just username to return from login routes instead */
+#[derive(Serialize, TS, Debug)]
+#[ts(export_to = TS_FILE)]
 pub struct User {
     pub username: String,
 }
