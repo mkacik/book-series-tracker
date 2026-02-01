@@ -13,19 +13,18 @@ mod credentials;
 mod crypto;
 mod database;
 mod genjs;
-mod job_processor;
-mod job_server;
 mod passwords;
 mod response;
 mod routes;
+mod scraper;
 mod series;
 mod subscriptions;
 mod user;
 
 use crate::crypto::init_crypto;
 use crate::database::Database;
-use crate::job_server::JobServer;
 use crate::passwords::Command as PasswordsCommand;
+use crate::scraper::server::JobServer;
 
 #[derive(Parser)]
 #[command(about)]
@@ -53,11 +52,11 @@ enum Command {
     },
 }
 
-fn spawn_thread_for_daily_scrape(database: Arc<Database>, job_server: Arc<JobServer>) {
+fn spawn_thread_for_daily_scrape(database: Arc<Database>) {
     tokio::spawn(async move {
         loop {
             common::sleep_seconds(86400).await;
-            let _ = controllers::jobs::enqueue_all(&database, &job_server).await;
+            let _ = scraper::common::enqueue_all_series(&database).await;
         }
     });
 }
@@ -83,7 +82,7 @@ async fn main() -> anyhow::Result<()> {
             let database = Arc::new(Database::init().await);
             let job_server = JobServer::init(database.clone(), poll_interval_s);
 
-            spawn_thread_for_daily_scrape(database.clone(), job_server.clone());
+            spawn_thread_for_daily_scrape(database.clone());
 
             let _rocket = rocket::build()
                 .mount("/", routes![routes::index, routes::catchall,])

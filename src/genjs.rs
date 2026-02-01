@@ -4,7 +4,7 @@ use std::io;
 use ts_rs::{ExportError, TS};
 
 use crate::books::GetAllBooksResult;
-use crate::job_server::GetAllJobsResult;
+use crate::scraper::job::GetAllJobsResult;
 use crate::series::{AddSeriesResult, GetAllSeriesResult};
 
 fn export_all() -> Result<(), ExportError> {

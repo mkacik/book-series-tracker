@@ -3,8 +3,8 @@ use rocket::State;
 use std::sync::Arc;
 
 use crate::database::Database;
-use crate::job_server::JobServer;
 use crate::response::ApiResponse;
+use crate::scraper::job::Job;
 use crate::series::{AddSeriesResult, BookSeries};
 use crate::subscriptions::Subscription;
 use crate::user::User;
@@ -18,14 +18,14 @@ pub async fn get_all(db: &State<Arc<Database>>, user: &User) -> ApiResponse {
 }
 
 #[post("/series/<asin>")]
-pub async fn add(job_server: &State<Arc<JobServer>>, _user: &User, asin: &str) -> ApiResponse {
+pub async fn add(db: &State<Arc<Database>>, _user: &User, asin: &str) -> ApiResponse {
     if !looks_like_asin(asin) {
         return ApiResponse::BadRequest {
             message: format!("'{}' does not look like asin", asin),
         };
     }
 
-    match job_server.add_job(String::from(asin)).await {
+    match Job::add(db, String::from(asin)).await {
         Ok(job_id) => ApiResponse::from_object(AddSeriesResult { job_id: job_id }),
         Err(error) => ApiResponse::from_error(error),
     }
