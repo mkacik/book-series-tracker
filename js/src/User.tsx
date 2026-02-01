@@ -1,5 +1,3 @@
-import { createContext, useContext } from "react";
-
 export class User {
   username: string | null;
 
@@ -18,13 +16,3 @@ export class User {
     return this.username;
   }
 }
-
-export const UserContext = createContext<User | null>(null);
-
-export const useUserContext = (): User => {
-  const user = useContext(UserContext);
-  if (user === null) {
-    throw new Error("UserContext requested but not provided");
-  }
-  return user;
-};

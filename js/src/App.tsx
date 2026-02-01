@@ -9,7 +9,7 @@ import {
   GetAllJobsResult,
   Job,
 } from "./generated/types";
-import { User, UserContext } from "./User";
+import { User } from "./User";
 import { isJobProcessing } from "./Job";
 import { BackendRoute, Route, RouteLink, usePathname } from "./Navigation";
 import { BooksPage } from "./BooksPage";
@@ -124,20 +124,14 @@ function App() {
 
     switch (route) {
       case Route.Books:
-        return (
-          <UserContext value={user}>
-            <BooksPage books={books} />
-          </UserContext>
-        );
+        return <BooksPage books={books} />;
       case Route.Series:
         return (
-          <UserContext value={user}>
-            <SeriesPage
-              series={series}
-              refreshBooksAndSeries={fetchBooksAndSeries}
-              refreshJobs={fetchJobs}
-            />
-          </UserContext>
+          <SeriesPage
+            series={series}
+            refreshBooksAndSeries={fetchBooksAndSeries}
+            refreshJobs={fetchJobs}
+          />
         );
       case Route.Jobs:
         return <JobsPage jobs={jobs} refreshJobs={fetchJobs} />;
