@@ -6,6 +6,8 @@ import * as UI from "./UI";
 export enum BackendRoute {
   User = "/api/me",
   Books = "/api/books",
+  MarkRead = "/api/books/mark_read",
+  MarkUnread = "/api/books/mark_unread",
   Series = "/api/series",
   Subscribe = "/api/series/subscribe",
   Unsubscribe = "/api/series/unsubscribe",

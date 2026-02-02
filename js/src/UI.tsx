@@ -107,6 +107,7 @@ export {
   Anchor,
   Button,
   Center,
+  Checkbox,
   Flex,
   List,
   Modal,

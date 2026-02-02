@@ -124,7 +124,13 @@ function App() {
 
     switch (route) {
       case Route.Books:
-        return <BooksPage books={books} series={series} />;
+        return (
+          <BooksPage
+            books={books}
+            series={series}
+            refreshBooks={fetchBooksAndSeries}
+          />
+        );
       case Route.Series:
         return (
           <SeriesPage

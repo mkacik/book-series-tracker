@@ -14,6 +14,7 @@ mod crypto;
 mod database;
 mod genjs;
 mod passwords;
+mod reads;
 mod response;
 mod routes;
 mod scraper;
@@ -90,6 +91,8 @@ async fn main() -> anyhow::Result<()> {
                     "/api",
                     routes![
                         controllers::books::get_all,
+                        controllers::books::mark_read,
+                        controllers::books::mark_unread,
                         controllers::jobs::get_all,
                         controllers::jobs::scrape_all_series,
                         controllers::login::me,

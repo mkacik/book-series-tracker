@@ -6,7 +6,6 @@ use crate::database::Database;
 use crate::user::User;
 
 #[derive(sqlx::FromRow, Serialize, TS, Debug)]
-#[ts(export_to = TS_FILE)]
 pub struct Book {
     pub asin: String,
     pub series_asin: String,
@@ -18,10 +17,20 @@ pub struct Book {
     pub time_first_seen: i64,
 }
 
+#[derive(sqlx::FromRow, Serialize, TS, Debug)]
+#[ts(export_to = TS_FILE, rename="Book")]
+pub struct BookWithStatus {
+    #[serde(flatten)]
+    #[sqlx(flatten)]
+    #[ts(flatten)]
+    pub book: Book,
+    pub read: bool,
+}
+
 #[derive(Serialize, TS, Debug)]
 #[ts(export_to = TS_FILE)]
 pub struct GetAllBooksResult {
-    pub books: Vec<Book>,
+    pub books: Vec<BookWithStatus>,
 }
 
 impl Book {
@@ -45,11 +54,29 @@ impl Book {
         Ok(())
     }
 
+    pub async fn fetch_by_asin(db: &Database, asin: &str) -> anyhow::Result<Book> {
+        let mut conn = db.acquire_db_conn().await?;
+        let series = sqlx::query_as::<_, Book>("SELECT * FROM books WHERE asin = ?1")
+            .bind(asin)
+            .fetch_one(&mut *conn)
+            .await?;
+
+        Ok(series)
+    }
+
     pub async fn fetch_by_user(db: &Database, user: &User) -> anyhow::Result<GetAllBooksResult> {
         let mut conn = db.acquire_db_conn().await?;
 
-        let books = sqlx::query_as::<_, Book>(
-            "SELECT books.* FROM books JOIN subscriptions USING (series_asin) WHERE username = ?1",
+        let books = sqlx::query_as::<_, BookWithStatus>(
+            "SELECT
+              books.*,
+              IIF(reads.username IS NOT NULL, 1, 0) as read
+            FROM books
+            JOIN subscriptions USING (series_asin)
+            LEFT JOIN reads ON (
+              books.asin = reads.book_asin
+              AND subscriptions.username = reads.username)
+            WHERE subscriptions.username = ?1",
         )
         .bind(&user.username)
         .fetch_all(&mut *conn)

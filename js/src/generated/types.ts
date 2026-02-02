@@ -2,7 +2,7 @@
 
 export type AddSeriesResult = { job_id: number, };
 
-export type Book = { asin: string, series_asin: string, ordinal: number, title: string, author: string, release_date: string | null, time_first_seen: number, };
+export type Book = { read: boolean, asin: string, series_asin: string, ordinal: number, title: string, author: string, release_date: string | null, time_first_seen: number, };
 
 export type BookSeries = { subscribed: boolean, subscribers: number, asin: string, name: string, time_first_seen: bigint, };
 

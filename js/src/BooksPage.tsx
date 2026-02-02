@@ -1,9 +1,40 @@
 import React from "react";
 import { Book, BookSeries } from "./generated/types";
+import { BackendRoute } from "./Navigation";
 
 import * as UI from "./UI";
 
-function BookListItem({ book }: { book: Book }) {
+function sortByOrdinal(a: Book, b: Book) {
+  return a.ordinal - b.ordinal;
+}
+
+function ReadCheckbox({
+  book,
+  refreshBooks,
+}: {
+  book: Book;
+  refreshBooks: () => void;
+}) {
+  const toggleRead = async () => {
+    const route = book.read ? BackendRoute.MarkUnread : BackendRoute.MarkRead;
+    const url = `${route}/${book.asin}`;
+    const response = await fetch(url, { method: "POST" });
+    if (!response.ok) {
+      alert("Error while changing book read status.");
+    }
+    refreshBooks();
+  };
+
+  return <UI.Checkbox checked={book.read} onChange={toggleRead} />;
+}
+
+function BookSection({
+  book,
+  refreshBooks,
+}: {
+  book: Book;
+  refreshBooks: () => void;
+}) {
   const title =
     book.release_date !== null
       ? `${book.release_date}: ${book.title}`
@@ -11,11 +42,16 @@ function BookListItem({ book }: { book: Book }) {
 
   return (
     <UI.Flex direction="column">
-      <UI.Title order={4}>{title}</UI.Title>
-      by {book.author}
-      <UI.Anchor href={"https://www.amazon.com/gp/product/" + book.asin}>
-        {book.asin}
-      </UI.Anchor>
+      <UI.Flex gap="xs" align="center">
+        <ReadCheckbox book={book} refreshBooks={refreshBooks} />
+        <UI.Title order={4}>{title}</UI.Title>
+      </UI.Flex>
+      <UI.Flex gap="0.2em" align="center">
+        by {book.author}, ASIN:
+        <UI.Anchor href={"https://www.amazon.com/gp/product/" + book.asin}>
+          {book.asin}
+        </UI.Anchor>
+      </UI.Flex>
     </UI.Flex>
   );
 }
@@ -23,9 +59,11 @@ function BookListItem({ book }: { book: Book }) {
 function SeriesSection({
   seriesName,
   books,
+  refreshBooks,
 }: {
   seriesName: string;
   books: Array<Book>;
+  refreshBooks: () => void;
 }) {
   if (books.length === 0) {
     return null;
@@ -35,8 +73,8 @@ function SeriesSection({
     <>
       <UI.Title order={3}>{seriesName}</UI.Title>
       <UI.Flex direction="column" gap="sm" ml="lg">
-        {books.toSorted().map((book, index) => (
-          <BookListItem key={index} book={book} />
+        {books.toSorted(sortByOrdinal).map((book, index) => (
+          <BookSection key={index} book={book} refreshBooks={refreshBooks} />
         ))}
       </UI.Flex>
     </>
@@ -46,12 +84,14 @@ function SeriesSection({
 function BookList({
   books,
   series,
+  refreshBooks,
 }: {
   books: Array<Book>;
   series: Array<BookSeries>;
+  refreshBooks: () => void;
 }) {
   if (books.length == 0) {
-    return "No upcoming books yet.";
+    return "No tracked books yet.";
   }
 
   const booksBySeries: Map<string, Array<Book>> = new Map();
@@ -74,6 +114,7 @@ function BookList({
             key={index}
             seriesName={series.name}
             books={booksBySeries.get(series.asin) || []}
+            refreshBooks={refreshBooks}
           />
         ))}
     </>
@@ -83,13 +124,15 @@ function BookList({
 export function BooksPage({
   books,
   series,
+  refreshBooks,
 }: {
   books: Array<Book>;
   series: Array<BookSeries>;
+  refreshBooks: () => void;
 }) {
   return (
-    <UI.Section title="Upcoming Books">
-      <BookList books={books} series={series} />
+    <UI.Section title="Books">
+      <BookList books={books} series={series} refreshBooks={refreshBooks} />
     </UI.Section>
   );
 }
