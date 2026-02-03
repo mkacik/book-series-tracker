@@ -74,11 +74,11 @@ function SeriesListItem({
   refreshSeries: () => void;
 }) {
   return (
-    <UI.Flex gap="0.4em" align="center">
+    <UI.Flex gap="sm" align="center">
       <SubscribeButton series={series} refreshSeries={refreshSeries} />
 
       <UI.Text size="lg" c={series.subscribed ? undefined : "dimmed"}>
-        {series.name}
+        <b>{series.name}</b> ({series.count} books)
       </UI.Text>
 
       <UI.Anchor href={"https://www.amazon.com/dp/" + series.asin}>

@@ -19,6 +19,7 @@ pub struct BookSeriesWithStatus {
     #[sqlx(flatten)]
     #[ts(flatten)]
     pub series: BookSeries,
+    pub count: i32,
     pub subscribed: bool,
     pub subscribers: i32,
 }
@@ -73,14 +74,21 @@ impl BookSeries {
         let mut conn = db.acquire_db_conn().await?;
         let series_list = sqlx::query_as::<_, BookSeriesWithStatus>(
             "SELECT
-                  series.*,
-                  MAX(IIF(subscriptions.username = ?1, 1, 0)) AS subscribed,
-                  SUM(IIF(subscriptions.username IS NOT NULL, 1, 0)) AS subscribers
-                FROM series
-                LEFT JOIN subscriptions
-                  ON (series.asin = subscriptions.series_asin)
-                GROUP BY 1, 2, 3
-                ORDER BY series.name",
+            series.*,
+            MAX(IIF(subscriptions.username = ?1, 1, 0)) as subscribed,
+            SUM(IIF(subscriptions.username IS NOT NULL, 1, 0)) as subscribers,
+            IIF(books.count IS NOT NULL, books.count, 0) as count
+          FROM series
+          LEFT JOIN subscriptions
+            ON (series.asin = subscriptions.series_asin)
+          LEFT JOIN (
+            SELECT series.asin, COUNT(1) AS count
+            FROM series
+            LEFT JOIN books ON (series.asin = books.series_asin)
+            GROUP BY series.asin
+          ) books USING (asin)
+          GROUP BY 1, 2, 3
+          ORDER BY series.name",
         )
         .bind(&user.username)
         .fetch_all(&mut *conn)
