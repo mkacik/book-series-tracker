@@ -30,8 +30,9 @@ impl JobServer {
                     Ok(_job_count) => {
                         sleep_seconds(poll_interval).await;
                     }
-                    Err(_) => {
-                        return;
+                    Err(error) => {
+                        log::error!("{:?}", error);
+                        std::process::exit(1);
                     }
                 };
             }

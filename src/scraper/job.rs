@@ -44,7 +44,7 @@ impl Job {
         // state, it means server closed mid-processing, so need to restart the job
         // instead of fetching next QUEUED
         let job = sqlx::query_as::<_, Job>(
-            "SELECT id, params FROM jobs WHERE status IN ('QUEUED', 'PROCESSING')
+            "SELECT * FROM jobs WHERE status IN ('QUEUED', 'PROCESSING')
                 ORDER BY time_created ASC LIMIT 1",
         )
         .fetch_optional(&mut *conn)
