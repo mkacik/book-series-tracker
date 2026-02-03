@@ -174,7 +174,10 @@ function App() {
   return (
     <UI.Layout>
       <UI.Header>
-        <UI.Title order={3}>Book Series Tracker</UI.Title>
+        <UI.Flex gap="0.4em" align="center">
+          <UI.IconBooks />
+          <UI.Title order={3}>Book Series Tracker</UI.Title>
+        </UI.Flex>
 
         {routeLinks}
 

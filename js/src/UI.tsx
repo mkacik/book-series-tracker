@@ -128,4 +128,4 @@ export {
   Title,
 } from "@mantine/core";
 
-export { IconAlertTriangle } from "@tabler/icons-react";
+export { IconBooks, IconAlertTriangle } from "@tabler/icons-react";
