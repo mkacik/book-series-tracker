@@ -1,7 +1,7 @@
 import React from "react";
 import { Book, BookSeries } from "./generated/types";
 import { BackendRoute } from "./Navigation";
-import { useAppSettingsContext } from "./AppSettings";
+import { AppSettings, useAppSettingsContext } from "./AppSettings";
 
 import * as UI from "./UI";
 
@@ -86,6 +86,30 @@ function SeriesSection({
   );
 }
 
+function isReleased(book: Book): boolean {
+  if (book.release_date === null) {
+    return true;
+  }
+  const now = new Date();
+  const releaseDate = new Date(book.release_date);
+  return now > releaseDate;
+}
+
+function includeBook(book: Book, settings: AppSettings) {
+  if (settings.hideReadBooks && book.read) {
+    return false;
+  }
+
+  switch (settings.releaseDateFilter) {
+    case "released":
+      return isReleased(book);
+    case "unreleased":
+      return !isReleased(book);
+    default:
+      return true;
+  }
+}
+
 function BookList({
   books,
   series,
@@ -99,13 +123,15 @@ function BookList({
     return "No tracked books yet.";
   }
 
-  const hideReadBooks = useAppSettingsContext().hideReadBooks;
+  const settings = useAppSettingsContext();
+
   const booksBySeries: Map<string, Array<Book>> = new Map();
 
   for (const book of books) {
-    if (hideReadBooks && book.read) {
+    if (!includeBook(book, settings)) {
       continue;
     }
+
     const series_asin = book.series_asin;
     if (booksBySeries.has(series_asin)) {
       booksBySeries.get(series_asin)!.push(book);

@@ -90,6 +90,17 @@ export function SettingsButton({ onClick }: { onClick: () => void }) {
   );
 }
 
+export function SettingsGrid({ children }: { children: React.ReactNode }) {
+  const style = {
+    display: "grid",
+    alignItems: "center",
+    gridTemplateColumns: "auto 1fr",
+    gap: "0.5rem 1rem",
+  };
+
+  return <div style={style}>{children}</div>;
+}
+
 export function PageLoading() {
   return (
     <Center h="100%">
@@ -119,6 +130,7 @@ export {
   Flex,
   List,
   Modal,
+  NativeSelect,
   PasswordInput,
   Space,
   Switch,

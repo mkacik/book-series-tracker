@@ -6,14 +6,18 @@ import { SettingsProvider, VersionedSettings } from "./SettingsProvider";
 
 import * as UI from "./UI";
 
+export type ReleaseDateFilter = "none" | "released" | "unreleased";
+
 export interface AppSettings extends VersionedSettings {
   hideReadBooks: boolean;
+  releaseDateFilter: ReleaseDateFilter;
 }
 
 function getDefaultAppSettings(): AppSettings {
   return {
-    version: 1,
+    version: 2,
     hideReadBooks: false,
+    releaseDateFilter: "none",
   } as AppSettings;
 }
 
@@ -41,12 +45,31 @@ function AppSettingsForm({
   const toggleHideReadBooks = () =>
     updateSettings({ ...settings, hideReadBooks: !settings.hideReadBooks });
 
+  const updateReleaseDateFilter = (event: React.SyntheticEvent) => {
+    const target = event.target as HTMLSelectElement;
+    const value = target.value as ReleaseDateFilter;
+    updateSettings({ ...settings, releaseDateFilter: value });
+  };
+
   return (
-    <UI.Checkbox
-      checked={settings.hideReadBooks}
-      onChange={toggleHideReadBooks}
-      label="Hide read books"
-    />
+    <UI.SettingsGrid>
+      <UI.Text>Hide read books</UI.Text>
+      <UI.Checkbox
+        checked={settings.hideReadBooks}
+        onChange={toggleHideReadBooks}
+      />
+
+      <UI.Text>Filter based on release date</UI.Text>
+      <UI.NativeSelect
+        value={settings.releaseDateFilter}
+        onChange={updateReleaseDateFilter}
+        data={[
+          { label: "Show all", value: "none" },
+          { label: "Only show released", value: "released" },
+          { label: "Only show upcoming", value: "unreleased" },
+        ]}
+      />
+    </UI.SettingsGrid>
   );
 }
 
@@ -62,6 +85,7 @@ export function AppSettingsButton({
   return (
     <>
       <UI.Modal
+        size="lg"
         title="Settings"
         opened={modalVisible}
         onClose={() => setModalVisible(false)}
