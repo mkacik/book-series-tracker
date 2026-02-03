@@ -166,9 +166,9 @@ export function SeriesPage({
 }) {
   return (
     <UI.Section title="Tracked Series">
-      <SeriesList series={series} refreshSeries={refreshBooksAndSeries} />
-      <UI.Space h="xs" />
       <AddSeriesForm refreshJobs={refreshJobs} />
+      <UI.Space h="xs" />
+      <SeriesList series={series} refreshSeries={refreshBooksAndSeries} />
     </UI.Section>
   );
 }
