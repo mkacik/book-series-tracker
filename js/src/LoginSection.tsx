@@ -43,7 +43,7 @@ function LoginForm({ setUser }: { setUser: SetUserHandler }) {
 
       setError(false);
       setUser(new User(user.username));
-    } catch (_) {
+    } catch (_error) {
       setError(true);
     }
   };

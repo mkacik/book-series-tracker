@@ -108,7 +108,7 @@ function BookList({
     }
     const series_asin = book.series_asin;
     if (booksBySeries.has(series_asin)) {
-      booksBySeries.get(series_asin).push(book);
+      booksBySeries.get(series_asin)!.push(book);
       continue;
     }
     booksBySeries.set(series_asin, [book]);

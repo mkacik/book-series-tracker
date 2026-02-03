@@ -124,7 +124,7 @@ function AddSeriesForm({ refreshJobs }: { refreshJobs: () => void }) {
       const response = await fetch(url, { method: "POST" });
       const result = await response.json();
 
-      if (result.hasOwnProperty("error") || !result.hasOwnProperty("job_id")) {
+      if (Object.hasOwn(result, "error") || !Object.hasOwn(result, "job_id")) {
         throw new Error(result.error || "UNKNOWN");
       }
 
@@ -134,7 +134,7 @@ function AddSeriesForm({ refreshJobs }: { refreshJobs: () => void }) {
         `Submitted job ${result.job_id}. Go to Jobs tab to check progress.`,
       );
     } catch (error) {
-      alert("Error while submitting job: " + error.message);
+      alert("Error while submitting job: " + error);
     }
   };
 

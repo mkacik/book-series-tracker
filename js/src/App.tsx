@@ -51,7 +51,7 @@ function App() {
       }
 
       const result = await response.json();
-      if (!result.hasOwnProperty("username")) {
+      if (!Object.hasOwn(result, "username")) {
         throw new Error();
       }
 
@@ -196,6 +196,6 @@ function App() {
   );
 }
 
-const domContainer = document.querySelector("#root");
+const domContainer = document.querySelector("#root")!;
 const root = createRoot(domContainer);
 root.render(<App />);

@@ -7,7 +7,7 @@ function pad(num: number): string {
   return num.toString().padStart(2, "0");
 }
 
-function formatTimestamp(ts: number): string {
+function formatTimestamp(ts: number | null): string {
   if (ts == null) {
     return "";
   }

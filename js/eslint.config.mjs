@@ -14,10 +14,17 @@ export default [
     settings: { react: { version: "detect" } },
     rules: {
       "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_" },
+        "error", {
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
       ],
-      "no-fallthrough": ["error", { "commentPattern": "break omitted:" }],
+      "no-fallthrough": [
+        "error",
+        { commentPattern: "break omitted:" },
+      ],
     },
   },
+  { ignores: [ "*.config.{js,cjs}" ] }
 ];
