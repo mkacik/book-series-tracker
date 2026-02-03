@@ -1,6 +1,7 @@
 import React from "react";
 import { Book, BookSeries } from "./generated/types";
 import { BackendRoute } from "./Navigation";
+import { useAppSettingsContext } from "./AppSettings";
 
 import * as UI from "./UI";
 
@@ -73,8 +74,12 @@ function SeriesSection({
     <>
       <UI.Title order={3}>{seriesName}</UI.Title>
       <UI.Flex direction="column" gap="sm" ml="lg">
-        {books.toSorted(sortByOrdinal).map((book, index) => (
-          <BookSection key={index} book={book} refreshBooks={refreshBooks} />
+        {books.toSorted(sortByOrdinal).map((book) => (
+          <BookSection
+            key={book.asin}
+            book={book}
+            refreshBooks={refreshBooks}
+          />
         ))}
       </UI.Flex>
     </>
@@ -94,9 +99,13 @@ function BookList({
     return "No tracked books yet.";
   }
 
+  const hideReadBooks = useAppSettingsContext().hideReadBooks;
   const booksBySeries: Map<string, Array<Book>> = new Map();
 
   for (const book of books) {
+    if (hideReadBooks && book.read) {
+      continue;
+    }
     const series_asin = book.series_asin;
     if (booksBySeries.has(series_asin)) {
       booksBySeries.get(series_asin).push(book);
@@ -109,9 +118,9 @@ function BookList({
     <>
       {series
         .filter((series) => series.subscribed)
-        .map((series, index) => (
+        .map((series) => (
           <SeriesSection
-            key={index}
+            key={series.asin}
             seriesName={series.name}
             books={booksBySeries.get(series.asin) || []}
             refreshBooks={refreshBooks}

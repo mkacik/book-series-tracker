@@ -16,11 +16,27 @@ import { BooksPage } from "./BooksPage";
 import { SeriesPage } from "./SeriesPage";
 import { JobsPage } from "./JobsPage";
 import { LoginSection, LogoutSection } from "./LoginSection";
+import {
+  AppSettings,
+  AppSettingsButton,
+  AppSettingsContext,
+  getAppSettingsProvider,
+} from "./AppSettings";
 
 import * as UI from "./UI";
 
 function App() {
   const route = usePathname();
+  const settingsProvider = getAppSettingsProvider();
+
+  const [settings, setSettings] = useState<AppSettings>(
+    settingsProvider.getSettings(),
+  );
+
+  const updateSettings = (settings: AppSettings) => {
+    settingsProvider.saveSettings(settings);
+    setSettings(settings);
+  };
 
   const [user, setUser] = useState<User | null>(null);
   const [books, setBooks] = useState<Array<Book>>([]);
@@ -163,11 +179,19 @@ function App() {
         {routeLinks}
 
         <UI.Flex gap="sm" ml="auto" align="center">
+          <AppSettingsButton
+            settings={settings}
+            updateSettings={updateSettings}
+          />
           <LogoutSection user={user} setUser={setUser} />
         </UI.Flex>
       </UI.Header>
 
-      <UI.Main>{getPageContent()}</UI.Main>
+      <UI.Main>
+        <AppSettingsContext value={settings}>
+          {getPageContent()}
+        </AppSettingsContext>
+      </UI.Main>
     </UI.Layout>
   );
 }

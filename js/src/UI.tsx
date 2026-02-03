@@ -12,7 +12,7 @@ import {
   Text,
   MantineProvider,
 } from "@mantine/core";
-import { IconTrash } from "@tabler/icons-react";
+import { IconAdjustments, IconTrash } from "@tabler/icons-react";
 
 import "@mantine/core/styles.css";
 
@@ -78,6 +78,14 @@ export function DeleteButton({ onClick }: { onClick: () => void }) {
   return (
     <ActionIcon variant="subtle" size="sm" onClick={onClick}>
       <IconTrash style={{ width: "70%", height: "70%" }} stroke={1.5} />
+    </ActionIcon>
+  );
+}
+
+export function SettingsButton({ onClick }: { onClick: () => void }) {
+  return (
+    <ActionIcon variant="subtle" size="sm" onClick={onClick}>
+      <IconAdjustments />
     </ActionIcon>
   );
 }
