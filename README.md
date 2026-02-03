@@ -45,4 +45,4 @@ $ npm install && npm run build
 ```
 ## Attributions
 
-Icons/glyphs/fonts from https://fonts.google.com/
+Icons/glyphs from https://tabler.io/icons
