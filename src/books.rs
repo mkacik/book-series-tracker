@@ -24,7 +24,7 @@ pub struct BookWithStatus {
     #[sqlx(flatten)]
     #[ts(flatten)]
     pub book: Book,
-    pub read: bool,
+    pub read_date: Option<String>,
 }
 
 #[derive(Serialize, TS, Debug)]
@@ -70,12 +70,12 @@ impl Book {
         let books = sqlx::query_as::<_, BookWithStatus>(
             "SELECT
               books.*,
-              IIF(reads.username IS NOT NULL, 1, 0) as read
+              read_date
             FROM books
             JOIN subscriptions USING (series_asin)
-            LEFT JOIN reads ON (
-              books.asin = reads.book_asin
-              AND subscriptions.username = reads.username)
+            LEFT JOIN read_state ON (
+              books.asin = read_state.book_asin
+              AND subscriptions.username = read_state.username)
             WHERE subscriptions.username = ?1",
         )
         .bind(&user.username)

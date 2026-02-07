@@ -16,8 +16,10 @@ function ReadCheckbox({
   book: Book;
   refreshBooks: () => void;
 }) {
+  const isRead = book.read_date !== null;
+
   const toggleRead = async () => {
-    const route = book.read ? BackendRoute.MarkUnread : BackendRoute.MarkRead;
+    const route = isRead ? BackendRoute.MarkUnread : BackendRoute.MarkRead;
     const url = `${route}/${book.asin}`;
     const response = await fetch(url, { method: "POST" });
     if (!response.ok) {
@@ -26,7 +28,7 @@ function ReadCheckbox({
     refreshBooks();
   };
 
-  return <UI.Checkbox checked={book.read} onChange={toggleRead} />;
+  return <UI.Checkbox checked={isRead} onChange={toggleRead} />;
 }
 
 function BookSection({
@@ -96,7 +98,7 @@ function isReleased(book: Book): boolean {
 }
 
 function includeBook(book: Book, settings: AppSettings) {
-  if (settings.hideReadBooks && book.read) {
+  if (settings.hideReadBooks && book.read_date !== null) {
     return false;
   }
 

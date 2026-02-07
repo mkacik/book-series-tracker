@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use crate::books::Book;
 use crate::database::Database;
-use crate::reads::ReadStatus;
+use crate::reads::ReadState;
 use crate::response::ApiResponse;
 use crate::user::User;
 
@@ -23,7 +23,7 @@ pub async fn mark_read(db: &State<Arc<Database>>, user: &User, asin: &str) -> Ap
         };
     }
 
-    match ReadStatus::add(db, user, asin).await {
+    match ReadState::add(db, user, asin).await {
         Ok(_) => ApiResponse::Success,
         Err(error) => ApiResponse::from_error(error),
     }
@@ -37,7 +37,7 @@ pub async fn mark_unread(db: &State<Arc<Database>>, user: &User, asin: &str) -> 
         };
     }
 
-    match ReadStatus::remove(db, user, asin).await {
+    match ReadState::remove(db, user, asin).await {
         Ok(_) => ApiResponse::Success,
         Err(error) => ApiResponse::from_error(error),
     }
