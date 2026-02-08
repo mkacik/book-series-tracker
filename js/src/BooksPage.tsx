@@ -101,25 +101,28 @@ function ReadDate({
 function BookRow({
   book,
   refreshBooks,
+  isMobile,
 }: {
   book: Book;
   refreshBooks: () => void;
+  isMobile: boolean;
 }) {
   return (
     <UI.Table.Tr>
       <UI.Table.Td pl="xl">{book.title}</UI.Table.Td>
-      <UI.Table.Td>{book.author}</UI.Table.Td>
-      <UI.Table.Td>
-        <UI.Anchor
-          ff="monospace"
-          href={"https://www.amazon.com/gp/product/" + book.asin}
-        >
-          {book.asin}
-        </UI.Anchor>
-      </UI.Table.Td>
-      <UI.Table.Td style={{ textWrap: "nowrap" }}>
-        {book.release_date}
-      </UI.Table.Td>
+      {!isMobile && (
+        <>
+          <UI.Table.Td>{book.author}</UI.Table.Td>
+          <UI.Table.Td ff="monospace">
+            <UI.Anchor href={"https://www.amazon.com/gp/product/" + book.asin}>
+              {book.asin}
+            </UI.Anchor>
+          </UI.Table.Td>
+          <UI.Table.Td style={{ textWrap: "nowrap" }}>
+            {book.release_date}
+          </UI.Table.Td>
+        </>
+      )}
       <UI.Table.Td>
         {book.read_date === null ? (
           <MarkReadButton book={book} refreshBooks={refreshBooks} />
@@ -135,10 +138,12 @@ function SeriesRows({
   seriesName,
   books,
   refreshBooks,
+  isMobile,
 }: {
   seriesName: string;
   books: Array<Book>;
   refreshBooks: () => void;
+  isMobile: boolean;
 }) {
   if (books.length === 0) {
     return null;
@@ -160,7 +165,12 @@ function SeriesRows({
       </UI.Table.Tr>
 
       {sortedBooks.map((book) => (
-        <BookRow key={book.asin} book={book} refreshBooks={refreshBooks} />
+        <BookRow
+          key={book.asin}
+          book={book}
+          refreshBooks={refreshBooks}
+          isMobile={isMobile}
+        />
       ))}
     </>
   );
@@ -194,10 +204,12 @@ function BooksTable({
   books,
   series,
   refreshBooks,
+  isMobile,
 }: {
   books: Array<Book>;
   series: Array<BookSeries>;
   refreshBooks: () => void;
+  isMobile: boolean;
 }) {
   if (books.length == 0) {
     return "No tracked books yet.";
@@ -224,9 +236,13 @@ function BooksTable({
       <UI.Table.Thead>
         <UI.Table.Tr>
           <UI.Table.Th>Title</UI.Table.Th>
-          <UI.Table.Th>Author</UI.Table.Th>
-          <UI.Table.Th>ASIN</UI.Table.Th>
-          <UI.Table.Th>Release Date</UI.Table.Th>
+          {!isMobile && (
+            <>
+              <UI.Table.Th>Author</UI.Table.Th>
+              <UI.Table.Th>ASIN</UI.Table.Th>
+              <UI.Table.Th>Release Date</UI.Table.Th>
+            </>
+          )}
           <UI.Table.Th>Read?</UI.Table.Th>
         </UI.Table.Tr>
       </UI.Table.Thead>
@@ -239,6 +255,7 @@ function BooksTable({
               seriesName={series.name}
               books={booksBySeries.get(series.asin) || []}
               refreshBooks={refreshBooks}
+              isMobile={isMobile}
             />
           ))}
       </UI.Table.Tbody>
@@ -250,14 +267,21 @@ export function BooksPage({
   books,
   series,
   refreshBooks,
+  isMobile,
 }: {
   books: Array<Book>;
   series: Array<BookSeries>;
   refreshBooks: () => void;
+  isMobile: boolean;
 }) {
   return (
     <UI.Section title="Books">
-      <BooksTable books={books} series={series} refreshBooks={refreshBooks} />
+      <BooksTable
+        books={books}
+        series={series}
+        refreshBooks={refreshBooks}
+        isMobile={isMobile}
+      />
     </UI.Section>
   );
 }

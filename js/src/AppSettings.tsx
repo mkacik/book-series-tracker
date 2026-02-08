@@ -74,9 +74,11 @@ function AppSettingsForm({
 }
 
 export function AppSettingsButton({
+  isMobile,
   settings,
   updateSettings,
 }: {
+  isMobile: boolean;
   settings: AppSettings;
   updateSettings: (settings: AppSettings) => void;
 }) {
@@ -92,7 +94,10 @@ export function AppSettingsButton({
       >
         <AppSettingsForm settings={settings} updateSettings={updateSettings} />
       </UI.Modal>
-      <UI.SettingsButton onClick={() => setModalVisible(!modalVisible)} />
+      <UI.SettingsButton
+        isMobile={isMobile}
+        onClick={() => setModalVisible(!modalVisible)}
+      />
     </>
   );
 }

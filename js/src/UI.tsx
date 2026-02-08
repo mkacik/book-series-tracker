@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 import {
   IconAdjustments,
+  IconBooks,
   IconCalendarEvent,
   IconTrash,
 } from "@tabler/icons-react";
@@ -20,21 +21,36 @@ import {
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 
-const theme = createTheme({
+export const IS_MOBILE_MEDIA_QUERY =
+  "(orientation: portrait) and (-webkit-min-device-pixel-ratio: 2)";
+
+const THEME_COMMON_VARS = {
   fontFamily: "Ubuntu, Roboto, Helvetica, sans-serif",
-});
+};
+const MOBILE_SCALE = 1.5;
+const THEME_DESKTOP = createTheme(THEME_COMMON_VARS);
+const THEME_MOBILE = createTheme({ ...THEME_COMMON_VARS, scale: MOBILE_SCALE });
+
+const ICON_SIZE_DEFAULT = 24;
+const ICON_SIZE_MOBILE = ICON_SIZE_DEFAULT * MOBILE_SCALE;
 
 export const HEADER_HEIGHT = 60;
 
 // root
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout({
+  isMobile,
+  children,
+}: {
+  isMobile: boolean;
+  children: React.ReactNode;
+}) {
   const headerStyle = {
     // can't set to auto, it will overlap with page content.
     height: HEADER_HEIGHT,
   };
 
   return (
-    <MantineProvider theme={theme}>
+    <MantineProvider theme={isMobile ? THEME_MOBILE : THEME_DESKTOP}>
       <AppShell header={headerStyle}>{children}</AppShell>
     </MantineProvider>
   );
@@ -94,12 +110,22 @@ export function CalendarButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-export function SettingsButton({ onClick }: { onClick: () => void }) {
+export function SettingsButton({
+  isMobile,
+  onClick,
+}: {
+  isMobile: boolean;
+  onClick: () => void;
+}) {
   return (
     <ActionIcon variant="subtle" size="sm" onClick={onClick}>
-      <IconAdjustments />
+      <IconAdjustments size={isMobile ? ICON_SIZE_MOBILE : ICON_SIZE_DEFAULT} />
     </ActionIcon>
   );
+}
+
+export function BooksIcon({ isMobile }: { isMobile: boolean }) {
+  return <IconBooks size={isMobile ? ICON_SIZE_MOBILE : ICON_SIZE_DEFAULT} />;
 }
 
 export function SettingsGrid({ children }: { children: React.ReactNode }) {
@@ -150,4 +176,4 @@ export {
   Tooltip,
 } from "@mantine/core";
 export { DatePicker } from "@mantine/dates";
-export { IconBooks, IconAlertTriangle } from "@tabler/icons-react";
+export { IconAlertTriangle } from "@tabler/icons-react";

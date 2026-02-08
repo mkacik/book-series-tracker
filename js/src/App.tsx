@@ -23,9 +23,14 @@ import {
   getAppSettingsProvider,
 } from "./AppSettings";
 
+import { useMediaQuery } from "@mantine/hooks";
+
 import * as UI from "./UI";
 
 function App() {
+  const isMobile = useMediaQuery(UI.IS_MOBILE_MEDIA_QUERY);
+  console.log(isMobile);
+
   const route = usePathname();
   const settingsProvider = getAppSettingsProvider();
 
@@ -138,6 +143,10 @@ function App() {
       return <LoginSection setUser={setUser} />;
     }
 
+    if (isMobile && route !== Route.Books) {
+      return <UI.PageNotFound />;
+    }
+
     switch (route) {
       case Route.Books:
         return (
@@ -145,6 +154,7 @@ function App() {
             books={books}
             series={series}
             refreshBooks={fetchBooksAndSeries}
+            isMobile={isMobile}
           />
         );
       case Route.Series:
@@ -163,7 +173,7 @@ function App() {
     }
   };
 
-  const routeLinks = userLoggedIn && (
+  const routeLinks = !isMobile && userLoggedIn && (
     <>
       <RouteLink route={Route.Books}>Books</RouteLink>
       <RouteLink route={Route.Series}>Series</RouteLink>
@@ -172,10 +182,10 @@ function App() {
   );
 
   return (
-    <UI.Layout>
+    <UI.Layout isMobile={isMobile}>
       <UI.Header>
         <UI.Flex gap="0.4em" align="center">
-          <UI.IconBooks />
+          <UI.BooksIcon isMobile={isMobile} />
           <UI.Title order={3}>Book Series Tracker</UI.Title>
         </UI.Flex>
 
@@ -183,6 +193,7 @@ function App() {
 
         <UI.Flex gap="sm" ml="auto" align="center">
           <AppSettingsButton
+            isMobile={isMobile}
             settings={settings}
             updateSettings={updateSettings}
           />
