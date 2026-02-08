@@ -5,16 +5,20 @@ import {
   AppShell,
   Center,
   Flex,
-  List,
   Loader,
   Space,
   Title,
   Text,
   MantineProvider,
 } from "@mantine/core";
-import { IconAdjustments, IconTrash } from "@tabler/icons-react";
+import {
+  IconAdjustments,
+  IconCalendarEvent,
+  IconTrash,
+} from "@tabler/icons-react";
 
 import "@mantine/core/styles.css";
+import "@mantine/dates/styles.css";
 
 const theme = createTheme({
   fontFamily: "Ubuntu, Roboto, Helvetica, sans-serif",
@@ -82,6 +86,14 @@ export function DeleteButton({ onClick }: { onClick: () => void }) {
   );
 }
 
+export function CalendarButton({ onClick }: { onClick: () => void }) {
+  return (
+    <ActionIcon variant="subtle" size="sm" onClick={onClick}>
+      <IconCalendarEvent style={{ width: "70%", height: "70%" }} stroke={1.5} />
+    </ActionIcon>
+  );
+}
+
 export function SettingsButton({ onClick }: { onClick: () => void }) {
   return (
     <ActionIcon variant="subtle" size="sm" onClick={onClick}>
@@ -119,8 +131,6 @@ export function PageNotFound() {
   );
 }
 
-export const ListItem = List.Item;
-
 export {
   Alert,
   Anchor,
@@ -128,7 +138,6 @@ export {
   Center,
   Checkbox,
   Flex,
-  List,
   Modal,
   NativeSelect,
   PasswordInput,
@@ -138,6 +147,7 @@ export {
   Text,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
-
+export { DatePicker } from "@mantine/dates";
 export { IconBooks, IconAlertTriangle } from "@tabler/icons-react";

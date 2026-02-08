@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 import { Book, BookSeries } from "./generated/types";
 import { BackendRoute } from "./Navigation";
 import { AppSettings, useAppSettingsContext } from "./AppSettings";
@@ -9,57 +10,117 @@ function sortByOrdinal(a: Book, b: Book) {
   return a.ordinal - b.ordinal;
 }
 
-function ReadCheckbox({
+function MarkReadButton({
   book,
   refreshBooks,
 }: {
   book: Book;
   refreshBooks: () => void;
 }) {
-  const isRead = book.read_date !== null;
-
-  const toggleRead = async () => {
-    const route = isRead ? BackendRoute.MarkUnread : BackendRoute.MarkRead;
-    const url = `${route}/${book.asin}`;
+  const markRead = async () => {
+    const url = `${BackendRoute.MarkRead}/${book.asin}`;
     const response = await fetch(url, { method: "POST" });
     if (!response.ok) {
-      alert("Error while changing book read status.");
+      alert("Error while marking book as read.");
     }
     refreshBooks();
   };
 
-  return <UI.Checkbox checked={isRead} onChange={toggleRead} />;
+  return (
+    <UI.Button size="compact-sm" onClick={markRead}>
+      mark read
+    </UI.Button>
+  );
 }
 
-function BookSection({
+function ReadDate({
   book,
   refreshBooks,
 }: {
   book: Book;
   refreshBooks: () => void;
 }) {
-  const title =
-    book.release_date !== null
-      ? `${book.release_date}: ${book.title}`
-      : book.title;
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [value, setValue] = useState<string | null>(book.read_date);
+
+  const setDate = () => {
+    alert(`Chosen ${value}, but saving is not yet implemented!`);
+  };
+
+  const markUnread = async () => {
+    const url = `${BackendRoute.MarkUnread}/${book.asin}`;
+    const response = await fetch(url, { method: "POST" });
+    if (!response.ok) {
+      alert("Error while marking book as unread.");
+    }
+    refreshBooks();
+    setModalVisible(false);
+  };
 
   return (
-    <UI.Flex direction="column">
-      <UI.Flex gap="xs" align="center">
-        <ReadCheckbox book={book} refreshBooks={refreshBooks} />
-        <UI.Title order={4}>{title}</UI.Title>
+    <>
+      <UI.Flex gap="0.2rem" align="center">
+        <UI.Text style={{ textWrap: "nowrap" }}>{book.read_date}</UI.Text>
+        <UI.CalendarButton onClick={() => setModalVisible(true)} />
       </UI.Flex>
-      <UI.Flex gap="0.2em" align="center">
-        by {book.author}, ASIN:
-        <UI.Anchor href={"https://www.amazon.com/gp/product/" + book.asin}>
-          {book.asin}
-        </UI.Anchor>
-      </UI.Flex>
-    </UI.Flex>
+
+      <UI.Modal
+        opened={modalVisible}
+        onClose={() => setModalVisible(false)}
+        title="Change read date"
+      >
+        <UI.Space h="sm" />
+        <UI.Center>
+          <UI.DatePicker value={value} onChange={setValue} />
+        </UI.Center>
+        <UI.Space h="md" />
+        <UI.Flex>
+          <UI.Button variant="outline" onClick={markUnread}>
+            mark unread
+          </UI.Button>
+          <UI.Button ml="auto" onClick={setDate}>
+            save
+          </UI.Button>
+        </UI.Flex>
+      </UI.Modal>
+    </>
   );
 }
 
-function SeriesSection({
+function BookRow({
+  book,
+  refreshBooks,
+}: {
+  book: Book;
+  refreshBooks: () => void;
+}) {
+  return (
+    <UI.Table.Tr>
+      <UI.Table.Td pl="xl">{book.title}</UI.Table.Td>
+      <UI.Table.Td>{book.author}</UI.Table.Td>
+      <UI.Table.Td>
+        <UI.Anchor
+          ff="monospace"
+          href={"https://www.amazon.com/gp/product/" + book.asin}
+        >
+          {book.asin}
+        </UI.Anchor>
+      </UI.Table.Td>
+      <UI.Table.Td style={{ textWrap: "nowrap" }}>
+        {book.release_date}
+      </UI.Table.Td>
+      <UI.Table.Td>
+        {book.read_date === null ? (
+          <MarkReadButton book={book} refreshBooks={refreshBooks} />
+        ) : (
+          <ReadDate book={book} refreshBooks={refreshBooks} />
+        )}
+      </UI.Table.Td>
+    </UI.Table.Tr>
+  );
+}
+
+function SeriesRows({
   seriesName,
   books,
   refreshBooks,
@@ -72,18 +133,24 @@ function SeriesSection({
     return null;
   }
 
+  const sortedBooks = books.toSorted(sortByOrdinal);
+  // FIXME: change this once series author is scraped
+  const author = books[0].author!;
+
   return (
     <>
-      <UI.Title order={3}>{seriesName}</UI.Title>
-      <UI.Flex direction="column" gap="sm" ml="lg">
-        {books.toSorted(sortByOrdinal).map((book) => (
-          <BookSection
-            key={book.asin}
-            book={book}
-            refreshBooks={refreshBooks}
-          />
-        ))}
-      </UI.Flex>
+      <UI.Table.Tr>
+        <UI.Table.Td colSpan={5}>
+          <UI.Text size="lg" fw={700}>
+            {seriesName}
+          </UI.Text>
+          <UI.Text>by {author}</UI.Text>
+        </UI.Table.Td>
+      </UI.Table.Tr>
+
+      {sortedBooks.map((book) => (
+        <BookRow key={book.asin} book={book} refreshBooks={refreshBooks} />
+      ))}
     </>
   );
 }
@@ -112,7 +179,7 @@ function includeBook(book: Book, settings: AppSettings) {
   }
 }
 
-function BookList({
+function BooksTable({
   books,
   series,
   refreshBooks,
@@ -128,7 +195,6 @@ function BookList({
   const settings = useAppSettingsContext();
 
   const booksBySeries: Map<string, Array<Book>> = new Map();
-
   for (const book of books) {
     if (!includeBook(book, settings)) {
       continue;
@@ -143,18 +209,29 @@ function BookList({
   }
 
   return (
-    <>
-      {series
-        .filter((series) => series.subscribed)
-        .map((series) => (
-          <SeriesSection
-            key={series.asin}
-            seriesName={series.name}
-            books={booksBySeries.get(series.asin) || []}
-            refreshBooks={refreshBooks}
-          />
-        ))}
-    </>
+    <UI.Table fz="md" stickyHeader stickyHeaderOffset={UI.HEADER_HEIGHT}>
+      <UI.Table.Thead>
+        <UI.Table.Tr>
+          <UI.Table.Th>Title</UI.Table.Th>
+          <UI.Table.Th>Author</UI.Table.Th>
+          <UI.Table.Th>ASIN</UI.Table.Th>
+          <UI.Table.Th>Release Date</UI.Table.Th>
+          <UI.Table.Th>Read?</UI.Table.Th>
+        </UI.Table.Tr>
+      </UI.Table.Thead>
+      <UI.Table.Tbody>
+        {series
+          .filter((series) => series.subscribed)
+          .map((series) => (
+            <SeriesRows
+              key={series.asin}
+              seriesName={series.name}
+              books={booksBySeries.get(series.asin) || []}
+              refreshBooks={refreshBooks}
+            />
+          ))}
+      </UI.Table.Tbody>
+    </UI.Table>
   );
 }
 
@@ -169,7 +246,7 @@ export function BooksPage({
 }) {
   return (
     <UI.Section title="Books">
-      <BookList books={books} series={series} refreshBooks={refreshBooks} />
+      <BooksTable books={books} series={series} refreshBooks={refreshBooks} />
     </UI.Section>
   );
 }

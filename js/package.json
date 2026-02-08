@@ -10,11 +10,13 @@
   "author": "m.m.kacik",
   "license": "",
   "dependencies": {
-    "@mantine/core": "^8.3.12",
-    "@mantine/hooks": "^8.3.12",
+    "@mantine/core": "^8.3.14",
+    "@mantine/dates": "^8.3.14",
+    "@mantine/hooks": "^8.3.14",
     "@tabler/icons-react": "^3.36.1",
     "@types/react": "19.1.9",
     "@types/react-dom": "19.1.7",
+    "dayjs": "^1.11.19",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },
