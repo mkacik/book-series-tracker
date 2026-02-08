@@ -127,6 +127,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(non_snake_case)]
     fn test_string_to_u8_array_pads_with_zero_bytes_to_STRBYTES_len() {
         let padded = "abc";
         let result = string_to_u8_array(&padded);
