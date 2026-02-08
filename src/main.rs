@@ -92,6 +92,7 @@ async fn main() -> anyhow::Result<()> {
                     routes![
                         controllers::books::get_all,
                         controllers::books::mark_read,
+                        controllers::books::mark_read_on_date,
                         controllers::books::mark_unread,
                         controllers::jobs::get_all,
                         controllers::jobs::scrape_all_series,

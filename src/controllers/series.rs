@@ -84,9 +84,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_looks_like_asin_ok() {
-        assert!(looks_like_asin("B09FSCHFGK").is_ok());
-        assert!(looks_like_asin(" B09FSCHFGK ").is_err());
-        assert!(looks_like_asin("some other text").is_err());
+    fn test_looks_like_asin() {
+        assert!(looks_like_asin("B09FSCHFGK"));
+
+        assert!(!looks_like_asin(" B09FSCHFGK "));
+        assert!(!looks_like_asin("some other text"));
     }
 }

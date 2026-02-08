@@ -41,10 +41,21 @@ function ReadDate({
   refreshBooks: () => void;
 }) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [value, setValue] = useState<string | null>(book.read_date);
+  const [readDate, setReadDate] = useState<string | null>(book.read_date);
 
-  const setDate = () => {
-    alert(`Chosen ${value}, but saving is not yet implemented!`);
+  const updateReadDate = async () => {
+    if (readDate == book.read_date) {
+      setModalVisible(false);
+      return;
+    }
+    const url = `${BackendRoute.MarkRead}/${book.asin}/${readDate}`;
+    const response = await fetch(url, { method: "POST" });
+    if (!response.ok) {
+      alert("Error while updating read date");
+      return;
+    }
+    refreshBooks();
+    setModalVisible(false);
   };
 
   const markUnread = async () => {
@@ -71,14 +82,14 @@ function ReadDate({
       >
         <UI.Space h="sm" />
         <UI.Center>
-          <UI.DatePicker value={value} onChange={setValue} />
+          <UI.DatePicker value={readDate} onChange={setReadDate} />
         </UI.Center>
         <UI.Space h="md" />
         <UI.Flex>
           <UI.Button variant="outline" onClick={markUnread}>
             mark unread
           </UI.Button>
-          <UI.Button ml="auto" onClick={setDate}>
+          <UI.Button ml="auto" onClick={updateReadDate}>
             save
           </UI.Button>
         </UI.Flex>
