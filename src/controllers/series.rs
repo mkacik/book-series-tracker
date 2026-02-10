@@ -18,14 +18,14 @@ pub async fn get_all(db: &State<Arc<Database>>, user: &User) -> ApiResponse {
 }
 
 #[post("/series/<asin>")]
-pub async fn add(db: &State<Arc<Database>>, _user: &User, asin: &str) -> ApiResponse {
+pub async fn add(db: &State<Arc<Database>>, user: &User, asin: &str) -> ApiResponse {
     if !looks_like_asin(asin) {
         return ApiResponse::BadRequest {
             message: format!("'{}' does not look like asin", asin),
         };
     }
 
-    match Job::add(db, String::from(asin)).await {
+    match Job::add(db, String::from(asin), Some(user)).await {
         Ok(job_id) => ApiResponse::from_object(AddSeriesResult { job_id: job_id }),
         Err(error) => ApiResponse::from_error(error),
     }

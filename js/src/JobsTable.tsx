@@ -39,6 +39,7 @@ function JobRow({ job }: { job: Job }) {
     <UI.Table.Tr>
       <UI.Table.Td>{job.id}</UI.Table.Td>
       <UI.Table.Td>{job.params}</UI.Table.Td>
+      <UI.Table.Td>{job.username ?? <i>scheduled</i>}</UI.Table.Td>
       <UI.Table.Td>
         <JobStatus status={job.status} />
       </UI.Table.Td>
@@ -58,6 +59,7 @@ export function JobsTable({ jobs }: { jobs: Array<Job> }) {
         <UI.Table.Tr>
           <UI.Table.Th>ID</UI.Table.Th>
           <UI.Table.Th>Params</UI.Table.Th>
+          <UI.Table.Th>User</UI.Table.Th>
           <UI.Table.Th>Status</UI.Table.Th>
           <UI.Table.Th>Duration (s)</UI.Table.Th>
           <UI.Table.Th>Job Created At</UI.Table.Th>

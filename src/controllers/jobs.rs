@@ -16,8 +16,8 @@ pub async fn get_all(db: &State<Arc<Database>>, _user: &User) -> ApiResponse {
 }
 
 #[post("/jobs")]
-pub async fn scrape_all_series(db: &State<Arc<Database>>, _user: &User) -> ApiResponse {
-    match enqueue_all_series(db).await {
+pub async fn scrape_all_series(db: &State<Arc<Database>>, user: &User) -> ApiResponse {
+    match enqueue_all_series(db, Some(user)).await {
         Ok(_) => ApiResponse::Success,
         Err(error) => ApiResponse::from_error(error),
     }

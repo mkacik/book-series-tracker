@@ -54,10 +54,11 @@ enum Command {
 }
 
 fn spawn_thread_for_daily_scrape(database: Arc<Database>) {
+    let user = None;
     tokio::spawn(async move {
         loop {
             common::sleep_seconds(86400).await;
-            let _ = scraper::common::enqueue_all_series(&database).await;
+            let _ = scraper::common::enqueue_all_series(&database, user).await;
         }
     });
 }

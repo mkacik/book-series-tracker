@@ -3,6 +3,7 @@ use ts_rs::TS;
 
 use crate::common::now;
 use crate::database::Database;
+use crate::user::User;
 
 #[derive(sqlx::FromRow, Serialize, TS, Clone, Debug)]
 #[ts(export_to = "types.ts")]
@@ -11,6 +12,7 @@ pub struct Job {
     pub params: String,
     pub status: String,
     pub errors: Option<String>,
+    pub username: Option<String>,
 
     #[ts(as = "i32")]
     pub time_created: i64,
@@ -53,7 +55,7 @@ impl Job {
         Ok(job)
     }
 
-    pub async fn add(db: &Database, params: String) -> anyhow::Result<i32> {
+    pub async fn add(db: &Database, params: String, user: Option<&User>) -> anyhow::Result<i32> {
         let mut conn = db.acquire_db_conn().await?;
 
         let maybe_existing_job = sqlx::query!(
@@ -68,10 +70,15 @@ impl Job {
         };
 
         let time_created = now();
+        let username: Option<&str> = match user {
+            Some(user) => Some(&user.username),
+            None => None,
+        };
         let result = sqlx::query_scalar!(
-            "INSERT INTO jobs (status, params, time_created)
-                    VALUES ('QUEUED', ?1, ?2) RETURNING id",
+            "INSERT INTO jobs (status, params, username, time_created)
+                    VALUES ('QUEUED', ?1, ?2, ?3) RETURNING id",
             params,
+            username,
             time_created,
         )
         .fetch_one(&mut *conn)

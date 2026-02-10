@@ -12,4 +12,4 @@ export type GetAllJobsResult = { jobs: Array<Job>, };
 
 export type GetAllSeriesResult = { series: Array<BookSeries>, };
 
-export type Job = { id: number, params: string, status: string, errors: string | null, time_created: number, time_started: number | null, time_finished: number | null, };
+export type Job = { id: number, params: string, status: string, errors: string | null, username: string | null, time_created: number, time_started: number | null, time_finished: number | null, };
