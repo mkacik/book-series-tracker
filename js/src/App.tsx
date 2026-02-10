@@ -29,8 +29,6 @@ import * as UI from "./UI";
 
 function App() {
   const isMobile = useMediaQuery(UI.IS_MOBILE_MEDIA_QUERY);
-  console.log(isMobile);
-
   const route = usePathname();
   const settingsProvider = getAppSettingsProvider();
 
