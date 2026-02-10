@@ -232,7 +232,7 @@ function BooksTable({
   }
 
   return (
-    <UI.Table fz="md" stickyHeader stickyHeaderOffset={UI.HEADER_HEIGHT}>
+    <UI.Table fz="md" stickyHeader>
       <UI.Table.Thead>
         <UI.Table.Tr>
           <UI.Table.Th>Title</UI.Table.Th>

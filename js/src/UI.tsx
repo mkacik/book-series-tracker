@@ -6,6 +6,7 @@ import {
   Center,
   Flex,
   Loader,
+  ScrollArea,
   Space,
   Title,
   Text,
@@ -69,9 +70,15 @@ export function Header({ children }: { children: React.ReactNode }) {
 export function Main({ children }: { children: React.ReactNode }) {
   return (
     <AppShell.Main>
-      <Flex p="md" gap="lg" direction="column">
-        {children}
-      </Flex>
+      <ScrollArea
+        h={`calc(100vh - ${HEADER_HEIGHT}px)`}
+        type="always"
+        offsetScrollbars="y"
+      >
+        <Flex h="100%" p="md" gap="lg" direction="column">
+          {children}
+        </Flex>
+      </ScrollArea>
     </AppShell.Main>
   );
 }
