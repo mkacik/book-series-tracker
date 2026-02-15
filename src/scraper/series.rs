@@ -302,7 +302,9 @@ mod tests {
     #[tokio::test]
     #[ignore = "requires geckodriver running"]
     async fn test_scrape_series_page() {
-        let caps = DesiredCapabilities::firefox();
+        let mut caps = DesiredCapabilities::firefox();
+        caps.set_browser_connection_enabled(false).unwrap();
+
         let driver = match WebDriver::new("http://localhost:4444", caps).await {
             Ok(val) => val,
             Err(err) => panic!("{}", err),
@@ -310,7 +312,7 @@ mod tests {
 
         let cwd = current_dir().unwrap();
 
-        let url = format!("file:///{}/sanitizer/output.html", cwd.display());
+        let url = format!("file:///{}/sanitizer/series_out.html", cwd.display());
         let series_asin = "TESTASIN";
 
         let maybe_result =
