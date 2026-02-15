@@ -19,6 +19,34 @@ export class FetchHelper {
     this.setLoading = setLoading ?? function (_isLoading: boolean) {};
   }
 
+  static withAlert(errorMessagePrefix: string) {
+    const onError = (errorMessage: string | null) => {
+      if (errorMessage !== null) {
+        alert(`${errorMessagePrefix}\n${errorMessage}`);
+      }
+    };
+    return new FetchHelper(onError);
+  }
+
+  /* desired behavior for error handling:
+    - normally server returns json { error: string }, if that's the case, use
+      the provided error message
+    - if it's parse-able json, but does not have error string, return response
+      status only
+    - if it's not json (unsatisfied server guards, etc.), return response status */
+  async getErrorMessage(response: Response) {
+    try {
+      const json = await response.json();
+      if (Object.hasOwn(json, "error")) {
+        return json.error ?? DEFAULT_ERROR;
+      }
+    } catch (_error) {
+      // ignore the json parsing error
+    }
+
+    return `${response.status}`;
+  }
+
   /* This helper provides uniform handling of fetch responses for callsites with
     explicit error handling logic (e.g. display error notification) and loading 
     indicator (e.g. loading banner). "Fire&forget" style fetch calls don't need
@@ -50,14 +78,13 @@ export class FetchHelper {
       this.setLoading(true);
       const response = await fetch(request);
 
-      // to get error message need to get to json in both success and error case
-      // catch block will handle unexpected not-json responses
-      const json = await response.json();
       if (!response.ok) {
-        throw new Error(json.error ?? DEFAULT_ERROR);
+        let errorMessage = await this.getErrorMessage(response);
+        throw new Error(errorMessage);
       }
 
-      await onSuccess(json as T);
+      const json = (await response.json()) as T;
+      await onSuccess(json);
 
       // if callback didn't throw, reset loading state and clear all previous errors;
       this.setLoading(false);

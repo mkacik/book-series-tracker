@@ -1,7 +1,8 @@
 import React from "react";
 import { useState } from "react";
-import { BookSeries } from "./generated/types";
+import { BookSeries, AddSeriesResult } from "./generated/types";
 import { BackendRoute } from "./Navigation";
+import { FetchHelper } from "./FetchHelper";
 
 import * as UI from "./UI";
 
@@ -17,12 +18,12 @@ function SubscribeButton({
       ? BackendRoute.Unsubscribe
       : BackendRoute.Subscribe;
     const url = `${route}/${series.asin}`;
-    const response = await fetch(url, { method: "POST" });
-    if (!response.ok) {
-      alert("Error while subscribing to series.");
-    }
-
-    refreshSeries();
+    const fetchHelper = FetchHelper.withAlert(
+      "Error while subscribing to series.",
+    );
+    await fetchHelper.fetch(new Request(url, { method: "POST" }), (_result) =>
+      refreshSeries(),
+    );
   };
 
   return (
@@ -55,12 +56,10 @@ function DeleteButton({
     }
 
     const url = `${BackendRoute.Series}/${series.asin}`;
-    const response = await fetch(url, { method: "DELETE" });
-    if (!response.ok) {
-      alert("Error while deleting series, check if server is running.");
-    }
-
-    refreshSeries();
+    const fetchHelper = FetchHelper.withAlert("Error while deleting series.");
+    await fetchHelper.fetch(new Request(url, { method: "DELETE" }), (_result) =>
+      refreshSeries(),
+    );
   };
 
   return <UI.DeleteButton onClick={deleteSeries} />;
@@ -116,26 +115,21 @@ function SeriesList({
 }
 
 function AddSeriesForm({ refreshJobs }: { refreshJobs: () => void }) {
-  const [asin, setAsin] = useState("");
+  const [asin, setAsin] = useState<string>("");
 
   const addSeries = async () => {
-    try {
-      const url = `${BackendRoute.Series}/${asin}`;
-      const response = await fetch(url, { method: "POST" });
-      const result = await response.json();
-
-      if (Object.hasOwn(result, "error") || !Object.hasOwn(result, "job_id")) {
-        throw new Error(result.error || "UNKNOWN");
-      }
-
-      setAsin("");
-      refreshJobs();
-      alert(
-        `Submitted job ${result.job_id}. Go to Jobs tab to check progress.`,
-      );
-    } catch (error) {
-      alert("Error while submitting job: " + error);
-    }
+    const url = `${BackendRoute.Series}/${asin}`;
+    const fetchHelper = FetchHelper.withAlert("Error while submitting job.");
+    await fetchHelper.fetch<AddSeriesResult>(
+      new Request(url, { method: "POST" }),
+      (result) => {
+        setAsin("");
+        refreshJobs();
+        alert(
+          `Submitted job ${result.job_id}. Go to Jobs tab to check progress.`,
+        );
+      },
+    );
   };
 
   return (

@@ -2,23 +2,21 @@ import React from "react";
 import { Job } from "./generated/types";
 import { JobsTable } from "./JobsTable";
 import { BackendRoute } from "./Navigation";
+import { FetchHelper } from "./FetchHelper";
 
 import * as UI from "./UI";
 
 function ScrapeButton({ refreshJobs }: { refreshJobs: () => void }) {
-  const triggerScrapeForAllSeries = (event: React.SyntheticEvent): void => {
-    event.preventDefault();
+  const triggerScrapeForAllSeries = async () => {
     if (confirm("Do you really want to trigger the scrape?") != true) {
       return;
     }
 
-    fetch(BackendRoute.Jobs, {
-      method: "POST",
-    }).then((response) => {
-      if (response.ok) {
-        refreshJobs();
-      }
-    });
+    const fetchHelper = FetchHelper.withAlert("Error while triggering scrape.");
+    await fetchHelper.fetch(
+      new Request(BackendRoute.Jobs, { method: "POST" }),
+      (_result) => refreshJobs(),
+    );
   };
 
   return (

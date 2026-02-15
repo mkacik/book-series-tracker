@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Book, BookSeries } from "./generated/types";
 import { BackendRoute } from "./Navigation";
 import { AppSettings, useAppSettingsContext } from "./AppSettings";
+import { FetchHelper } from "./FetchHelper";
 
 import * as UI from "./UI";
 
@@ -19,11 +20,12 @@ function MarkReadButton({
 }) {
   const markRead = async () => {
     const url = `${BackendRoute.MarkRead}/${book.asin}`;
-    const response = await fetch(url, { method: "POST" });
-    if (!response.ok) {
-      alert("Error while marking book as read.");
-    }
-    refreshBooks();
+    const fetchHelper = FetchHelper.withAlert(
+      "Error while marking book as read.",
+    );
+    await fetchHelper.fetch(new Request(url, { method: "POST" }), (_result) =>
+      refreshBooks(),
+    );
   };
 
   return (
@@ -49,23 +51,24 @@ function ReadDate({
       return;
     }
     const url = `${BackendRoute.MarkRead}/${book.asin}/${readDate}`;
-    const response = await fetch(url, { method: "POST" });
-    if (!response.ok) {
-      alert("Error while updating read date");
-      return;
-    }
-    refreshBooks();
-    setModalVisible(false);
+    const fetchHelper = FetchHelper.withAlert(
+      "Error while updating read date.",
+    );
+    await fetchHelper.fetch(new Request(url, { method: "POST" }), (_result) => {
+      refreshBooks();
+      setModalVisible(false);
+    });
   };
 
   const markUnread = async () => {
     const url = `${BackendRoute.MarkUnread}/${book.asin}`;
-    const response = await fetch(url, { method: "POST" });
-    if (!response.ok) {
-      alert("Error while marking book as unread.");
-    }
-    refreshBooks();
-    setModalVisible(false);
+    const fetchHelper = FetchHelper.withAlert(
+      "Error while marking book as unread.",
+    );
+    await fetchHelper.fetch(new Request(url, { method: "POST" }), (_result) => {
+      refreshBooks();
+      setModalVisible(false);
+    });
   };
 
   return (
