@@ -4,7 +4,7 @@ use tokio::sync::Semaphore;
 use crate::common::sleep_seconds;
 use crate::database::Database;
 use crate::scraper::job::Job;
-use crate::scraper::series::scrape_and_save;
+use crate::scraper::scraper::scrape_and_save;
 
 pub struct JobServer {
     pub database: Arc<Database>,
