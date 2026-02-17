@@ -4,7 +4,7 @@ use tokio::sync::Semaphore;
 use crate::common::sleep_seconds;
 use crate::database::Database;
 use crate::scraper::job::Job;
-use crate::scraper::scraper::scrape_and_save;
+use crate::scraper::scraper;
 
 pub struct JobServer {
     pub database: Arc<Database>,
@@ -77,7 +77,7 @@ impl JobServer {
 
         job.mark_as_processing(&self.database).await?;
 
-        match scrape_and_save(&self.database, job.params.to_string()).await {
+        match scraper::process(&self.database, &job).await {
             Ok(_) => job.mark_as_successful(&self.database).await?,
             Err(error) => {
                 let message = format!("{}", error);

@@ -6,18 +6,57 @@ use thirtyfour::prelude::*;
 use crate::books::Book;
 use crate::database::Database;
 use crate::scraper::book::{scrape_book_page, ScrapeBookPageResult};
+use crate::scraper::job::{Job, JobParams};
 use crate::scraper::series::{scrape_series_page, ScrapeSeriesPageResult};
+use crate::user::User;
 
 const POST_CLICK_WAIT_SECONDS: u64 = 10;
 
-pub async fn scrape_and_save(db: &Database, asin: String) -> anyhow::Result<()> {
-    let local_books: HashMap<String, Book> = Book::fetch_by_series_asin(db, &asin)
+pub async fn process(db: &Database, job: &Job) -> anyhow::Result<()> {
+    match serde_json::from_str::<JobParams>(&job.params) {
+        Ok(JobParams::Book { asin, .. }) => process_book(db, &asin).await?,
+        Ok(JobParams::Series { asin }) => {
+            process_series(db, &asin).await?;
+
+            // TODO: figure out better way to pass user to child jobs
+            let user: Option<User> = match &job.username {
+                Some(username) => Some(User {
+                    username: username.to_string(),
+                }),
+                None => None,
+            };
+
+            /* newly fetched books will have release date set, but ones previously
+            released need dedicated scrape to fill in release date */
+            let books = Book::fetch_by_series_asin(db, &asin).await?;
+            for book in books.into_iter() {
+                if book.release_date.is_none() {
+                    let params = JobParams::Book {
+                        asin: book.asin.to_string(),
+                        parent: job.id,
+                    };
+                    Job::add(db, params, user.as_ref()).await?;
+                }
+            }
+        }
+        Err(_) => {
+            return Err(anyhow::anyhow!(
+                "Could not deserialize job params, version mismatch."
+            ))
+        }
+    }
+
+    Ok(())
+}
+
+async fn process_series(db: &Database, asin: &str) -> anyhow::Result<()> {
+    let local_books: HashMap<String, Book> = Book::fetch_by_series_asin(db, asin)
         .await?
         .into_iter()
         .map(|book| (String::from(&book.asin), book))
         .collect();
 
-    let result = match set_up_and_scrape_series_page(&asin).await {
+    let result = match set_up_and_scrape_series_page(asin).await {
         Ok(value) => value,
         Err(e) => return Err(anyhow::anyhow!(e)),
     };
@@ -30,23 +69,16 @@ pub async fn scrape_and_save(db: &Database, asin: String) -> anyhow::Result<()> 
         }
     }
 
-    // TODO: enqueue book scrapes as separate jobs
-    /* newly fetched books will have release date set, but ones previously released
-    need dedicated scrape to fill in release date. Doing this after one more fetch to
-    make debugging simple */
-    let books = Book::fetch_by_series_asin(db, &asin).await?;
-    for mut book in books.into_iter() {
-        if book.release_date.is_none() {
-            let release_date = match set_up_and_scrape_book_page(&book.asin).await {
-                Ok(result) => result.release_date,
-                Err(e) => return Err(anyhow::anyhow!(e)),
-            };
-
-            book.update_release_date(&db, &release_date).await?
-        }
-    }
-
     Ok(())
+}
+
+async fn process_book(db: &Database, asin: &str) -> anyhow::Result<()> {
+    let release_date = match set_up_and_scrape_book_page(asin).await {
+        Ok(result) => result.release_date,
+        Err(e) => return Err(anyhow::anyhow!(e)),
+    };
+
+    Book::update_release_date(&db, &asin, &release_date).await
 }
 
 async fn get_webdriver() -> Result<WebDriver, WebDriverError> {
@@ -60,10 +92,6 @@ fn get_amazon_series_url(series_asin: &str) -> String {
     format!("https://www.amazon.com/dp/{}", series_asin).to_string()
 }
 
-fn get_amazon_book_url(series_asin: &str) -> String {
-    format!("https://www.amazon.com/gp/product/{}", series_asin).to_string()
-}
-
 async fn set_up_and_scrape_series_page(
     asin: &str,
 ) -> Result<ScrapeSeriesPageResult, Box<dyn Error + Send + Sync>> {
@@ -74,6 +102,10 @@ async fn set_up_and_scrape_series_page(
     driver.quit().await?;
 
     result
+}
+
+fn get_amazon_book_url(series_asin: &str) -> String {
+    format!("https://www.amazon.com/gp/product/{}", series_asin).to_string()
 }
 
 async fn set_up_and_scrape_book_page(

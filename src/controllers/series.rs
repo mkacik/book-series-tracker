@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use crate::database::Database;
 use crate::response::ApiResponse;
-use crate::scraper::job::Job;
+use crate::scraper::job::{Job, JobParams};
 use crate::series::{AddSeriesResult, BookSeries};
 use crate::subscriptions::Subscription;
 use crate::user::User;
@@ -25,7 +25,10 @@ pub async fn add(db: &State<Arc<Database>>, user: &User, asin: &str) -> ApiRespo
         };
     }
 
-    match Job::add(db, String::from(asin), Some(user)).await {
+    let params = JobParams::Series {
+        asin: asin.to_string(),
+    };
+    match Job::add(db, params, Some(user)).await {
         Ok(job_id) => ApiResponse::from_object(AddSeriesResult { job_id: job_id }),
         Err(error) => ApiResponse::from_error(error),
     }

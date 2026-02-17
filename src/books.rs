@@ -55,21 +55,18 @@ impl Book {
     }
 
     pub async fn update_release_date(
-        &mut self,
         db: &Database,
+        asin: &str,
         release_date: &str,
     ) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
-
         sqlx::query!(
             "UPDATE books SET release_date = ?1 WHERE asin = ?2",
             release_date,
-            self.asin,
+            asin,
         )
         .execute(&mut *conn)
         .await?;
-
-        self.release_date = Some(release_date.to_string());
 
         Ok(())
     }

@@ -1,14 +1,24 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::common::now;
 use crate::database::Database;
 use crate::user::User;
 
+#[derive(Deserialize, Serialize)]
+#[serde(tag = "variant")]
+pub enum JobParams {
+    Book { asin: String, parent: i32 },
+    Series { asin: String },
+}
+
 #[derive(sqlx::FromRow, Serialize, TS, Clone, Debug)]
 #[ts(export_to = "types.ts")]
 pub struct Job {
     pub id: i32,
+    /* Params struct may change over time and should not prevent serialization,
+    if old version is encountered. Params string will only be deserialized during
+    job processing, for display in UI we need only json string */
     pub params: String,
     pub status: String,
     pub errors: Option<String>,
@@ -55,9 +65,14 @@ impl Job {
         Ok(job)
     }
 
-    pub async fn add(db: &Database, params: String, user: Option<&User>) -> anyhow::Result<i32> {
+    pub async fn add(
+        db: &Database,
+        job_params: JobParams,
+        user: Option<&User>,
+    ) -> anyhow::Result<i32> {
         let mut conn = db.acquire_db_conn().await?;
 
+        let params = serde_json::to_string(&job_params)?;
         let maybe_existing_job = sqlx::query!(
             "SELECT id FROM jobs WHERE status = 'QUEUED' AND params = ?1",
             params
