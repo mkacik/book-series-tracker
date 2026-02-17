@@ -1,3 +1,4 @@
+mod book;
 pub mod common;
 pub mod job;
 mod scraper;

@@ -37,7 +37,7 @@ impl Book {
     pub async fn save(&self, db: &Database) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
         sqlx::query!(
-            "INSERT OR IGNORE INTO books (
+            "INSERT INTO books (
           asin, series_asin, ordinal, title, author, release_date, time_first_seen
         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
             self.asin,
@@ -50,6 +50,26 @@ impl Book {
         )
         .execute(&mut *conn)
         .await?;
+
+        Ok(())
+    }
+
+    pub async fn update_release_date(
+        &mut self,
+        db: &Database,
+        release_date: &str,
+    ) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+
+        sqlx::query!(
+            "UPDATE books SET release_date = ?1 WHERE asin = ?2",
+            release_date,
+            self.asin,
+        )
+        .execute(&mut *conn)
+        .await?;
+
+        self.release_date = Some(release_date.to_string());
 
         Ok(())
     }

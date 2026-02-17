@@ -1,4 +1,3 @@
-use chrono::Month;
 use log;
 use regex::Regex;
 use std::error::Error;
@@ -8,6 +7,7 @@ use thirtyfour::support::sleep;
 
 use crate::books::Book;
 use crate::common::now;
+use crate::scraper::common::parse_date;
 use crate::series::BookSeries;
 
 pub struct ScrapeSeriesPageResult {
@@ -18,7 +18,7 @@ pub struct ScrapeSeriesPageResult {
 pub async fn scrape_series_page(
     driver: &WebDriver,
     url: String,
-    series_asin: String,
+    series_asin: &str,
     sleep_seconds: u64,
 ) -> Result<ScrapeSeriesPageResult, Box<dyn Error + Send + Sync>> {
     driver.goto(url).await?;
@@ -111,7 +111,7 @@ pub async fn scrape_series_page(
 
         let book = Book {
             asin: asin,
-            series_asin: series_asin.clone(),
+            series_asin: series_asin.to_string(),
             ordinal: ordinal,
             title: title,
             author: authors,
@@ -124,7 +124,7 @@ pub async fn scrape_series_page(
     Ok(ScrapeSeriesPageResult {
         series: BookSeries {
             name: series_name,
-            asin: series_asin,
+            asin: series_asin.to_string(),
             time_first_seen: now(),
         },
         books: books,
@@ -151,26 +151,6 @@ fn extract_asin(url: String) -> String {
     asin.to_string()
 }
 
-fn parse_date(string: String) -> Result<String, Box<dyn Error + Send + Sync>> {
-    let parts: Vec<&str> = string.split(" ").collect();
-
-    if parts.len() != 3 {
-        return Err("Incorrect date")?;
-    }
-
-    let (maybe_month, maybe_day, maybe_year) = (parts[0], parts[1], parts[2]);
-
-    let month: u32 = maybe_month.parse::<Month>()?.number_from_month();
-    let day: u32 = maybe_day[0..maybe_day.len() - 1].parse()?;
-    let year: u32 = maybe_year.parse()?;
-    if (day > 31) || (year > 2100) {
-        return Err("Incorrect date")?;
-    }
-    let date = format!("{}-{:0>2}-{:0>2}", year, month, day);
-
-    Ok(date)
-}
-
 // I can grab some elements by id/class name, but the formatting inside changes day by day.
 // To avoid trying to guess the next step of page editors, I will just strip all tags away of
 // whatever html is there, hoping to get at equivalent of innerText of innermost elements.
@@ -185,28 +165,6 @@ mod tests {
     use super::*;
     use std::env::current_dir;
     use tokio;
-
-    #[test]
-    fn test_parse_date_err() {
-        assert!(parse_date("".to_string()).is_err());
-        assert!(parse_date("Not a date".to_string()).is_err());
-        assert!(parse_date("November 66, 15670".to_string()).is_err());
-    }
-
-    #[test]
-    fn test_parse_date_ok() {
-        let cases = vec![
-            ("November 10, 2024", "2024-11-10"),
-            ("January 19, 2025", "2025-01-19"),
-            ("February 31, 2023", "2023-02-31"),
-        ];
-
-        for (input, expected_result) in cases.into_iter() {
-            let result = parse_date(String::from(input));
-            assert!(result.is_ok());
-            assert_eq!(result.unwrap(), expected_result);
-        }
-    }
 
     #[test]
     fn test_sanitize_string_author() {
@@ -249,7 +207,7 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore = "requires geckodriver running"]
+    #[ignore = "requires geckodriver running; run with --ignored --test-threads=1"]
     async fn test_scrape_series_page() {
         let mut caps = DesiredCapabilities::firefox();
         caps.set_browser_connection_enabled(false).unwrap();
@@ -264,8 +222,7 @@ mod tests {
         let url = format!("file:///{}/sanitizer/series_out.html", cwd.display());
         let series_asin = "TESTASIN";
 
-        let maybe_result =
-            scrape_series_page(&driver, url.to_string(), series_asin.to_string(), 0).await;
+        let maybe_result = scrape_series_page(&driver, url.to_string(), series_asin, 0).await;
 
         driver.quit().await.unwrap();
 
@@ -273,7 +230,7 @@ mod tests {
         let result = maybe_result.unwrap();
 
         assert_eq!(result.series.name, "Backyard Starship");
-        assert_eq!(result.series.asin, series_asin);
+        assert_eq!(&result.series.asin, series_asin);
         assert_eq!(result.books.len(), 31);
     }
 }
