@@ -1,5 +1,5 @@
 mod book;
-pub mod common;
+mod common;
 pub mod job;
 mod scraper;
 mod series;

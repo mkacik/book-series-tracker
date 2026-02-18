@@ -22,6 +22,7 @@ mod series;
 mod subscriptions;
 mod user;
 
+use crate::controllers::series::enqueue_all_series;
 use crate::crypto::init_crypto;
 use crate::database::Database;
 use crate::passwords::Command as PasswordsCommand;
@@ -58,7 +59,7 @@ fn spawn_thread_for_daily_scrape(database: Arc<Database>) {
     tokio::spawn(async move {
         loop {
             common::sleep_seconds(86400).await;
-            let _ = scraper::common::enqueue_all_series(&database, user).await;
+            let _ = enqueue_all_series(&database, user).await;
         }
     });
 }
@@ -96,11 +97,11 @@ async fn main() -> anyhow::Result<()> {
                         controllers::books::mark_read_on_date,
                         controllers::books::mark_unread,
                         controllers::jobs::get_all,
-                        controllers::jobs::scrape_all_series,
                         controllers::login::me,
                         controllers::login::login,
                         controllers::login::logout,
                         controllers::series::get_all,
+                        controllers::series::scrape_all,
                         controllers::series::add,
                         controllers::series::remove,
                         controllers::series::subscribe,

@@ -76,6 +76,24 @@ pub async fn unsubscribe(db: &State<Arc<Database>>, user: &User, asin: &str) -> 
     }
 }
 
+#[post("/series/all")]
+pub async fn scrape_all(db: &State<Arc<Database>>, user: &User) -> ApiResponse {
+    match enqueue_all_series(db, Some(user)).await {
+        Ok(_) => ApiResponse::Success,
+        Err(error) => ApiResponse::from_error(error),
+    }
+}
+
+pub async fn enqueue_all_series(db: &Database, user: Option<&User>) -> anyhow::Result<()> {
+    let all_series = BookSeries::fetch_all(db).await?;
+    for series in all_series {
+        let params = JobParams::Series { asin: series.asin };
+        Job::add(db, params, user).await?;
+    }
+
+    Ok(())
+}
+
 pub fn looks_like_asin(asin: &str) -> bool {
     let re = Regex::new(r"^B[A-Z0-9]{9}$").unwrap();
 
