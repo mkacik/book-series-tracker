@@ -13,9 +13,18 @@ use crate::user::User;
 const POST_CLICK_WAIT_SECONDS: u64 = 10;
 
 pub async fn process(db: &Database, job: &Job) -> anyhow::Result<()> {
-    match serde_json::from_str::<JobParams>(&job.params) {
-        Ok(JobParams::Book { asin, .. }) => process_book(db, &asin).await?,
-        Ok(JobParams::Series { asin }) => {
+    let params = match serde_json::from_str::<JobParams>(&job.params) {
+        Ok(params) => params,
+        Err(_) => {
+            return Err(anyhow::anyhow!(
+                "Could not deserialize job params, version mismatch."
+            ))
+        }
+    };
+
+    match params {
+        JobParams::Book { asin, .. } => process_book(db, &asin).await?,
+        JobParams::Series { asin } => {
             process_series(db, &asin).await?;
 
             // TODO: figure out better way to pass user to child jobs
@@ -39,11 +48,6 @@ pub async fn process(db: &Database, job: &Job) -> anyhow::Result<()> {
                 }
             }
         }
-        Err(_) => {
-            return Err(anyhow::anyhow!(
-                "Could not deserialize job params, version mismatch."
-            ))
-        }
     }
 
     Ok(())
@@ -56,7 +60,7 @@ async fn process_series(db: &Database, asin: &str) -> anyhow::Result<()> {
         .map(|book| (String::from(&book.asin), book))
         .collect();
 
-    let result = match set_up_and_scrape_series_page(asin).await {
+    let result = match set_up_webdriver_and_scrape_series_page(asin).await {
         Ok(value) => value,
         Err(e) => return Err(anyhow::anyhow!(e)),
     };
@@ -73,7 +77,7 @@ async fn process_series(db: &Database, asin: &str) -> anyhow::Result<()> {
 }
 
 async fn process_book(db: &Database, asin: &str) -> anyhow::Result<()> {
-    let release_date = match set_up_and_scrape_book_page(asin).await {
+    let release_date = match set_up_webdriver_and_scrape_book_page(asin).await {
         Ok(result) => result.release_date,
         Err(e) => return Err(anyhow::anyhow!(e)),
     };
@@ -92,7 +96,7 @@ fn get_amazon_series_url(series_asin: &str) -> String {
     format!("https://www.amazon.com/dp/{}", series_asin).to_string()
 }
 
-async fn set_up_and_scrape_series_page(
+async fn set_up_webdriver_and_scrape_series_page(
     asin: &str,
 ) -> Result<ScrapeSeriesPageResult, Box<dyn Error + Send + Sync>> {
     let driver = get_webdriver().await?;
@@ -108,7 +112,7 @@ fn get_amazon_book_url(series_asin: &str) -> String {
     format!("https://www.amazon.com/gp/product/{}", series_asin).to_string()
 }
 
-async fn set_up_and_scrape_book_page(
+async fn set_up_webdriver_and_scrape_book_page(
     asin: &str,
 ) -> Result<ScrapeBookPageResult, Box<dyn Error + Send + Sync>> {
     let driver = get_webdriver().await?;
