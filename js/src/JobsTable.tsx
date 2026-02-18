@@ -60,7 +60,7 @@ function JobRow({ job }: { job: Job }) {
       <UI.Table.Td>
         <Timestamp ts={job.time_finished} />
       </UI.Table.Td>
-      <UI.Table.Td>{job.errors}</UI.Table.Td>
+      <UI.Table.Td>{job.errors ?? "-"}</UI.Table.Td>
     </UI.Table.Tr>
   );
 }
