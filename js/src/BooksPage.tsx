@@ -116,8 +116,11 @@ function BookRow({
       {!isMobile && (
         <>
           <UI.Table.Td>{book.author}</UI.Table.Td>
-          <UI.Table.Td ff="monospace">
-            <UI.Anchor href={"https://www.amazon.com/gp/product/" + book.asin}>
+          <UI.Table.Td>
+            <UI.Anchor
+              ff="monospace"
+              href={"https://www.amazon.com/gp/product/" + book.asin}
+            >
               {book.asin}
             </UI.Anchor>
           </UI.Table.Td>
@@ -166,17 +169,21 @@ function SeriesRows({
           <UI.Text>by {author}</UI.Text>
         </UI.Table.Td>
 
-        <UI.Table.Td>
-          <UI.Anchor
-            fw={700}
-            ff="monospace"
-            href={"https://www.amazon.com/dp/" + series.asin}
-          >
-            {series.asin}
-          </UI.Anchor>
-        </UI.Table.Td>
+        {isMobile ? null : (
+          <>
+            <UI.Table.Td>
+              <UI.Anchor
+                fw={700}
+                ff="monospace"
+                href={"https://www.amazon.com/dp/" + series.asin}
+              >
+                {series.asin}
+              </UI.Anchor>
+            </UI.Table.Td>
 
-        <UI.Table.Td colSpan={2}></UI.Table.Td>
+            <UI.Table.Td colSpan={2}></UI.Table.Td>
+          </>
+        )}
       </UI.Table.Tr>
 
       {sortedBooks.map((book) => (
@@ -255,10 +262,10 @@ function BooksTable({
             <>
               <UI.Table.Th>Author</UI.Table.Th>
               <UI.Table.Th>ASIN</UI.Table.Th>
-              <UI.Table.Th>Release Date</UI.Table.Th>
+              <UI.Table.Th>Released</UI.Table.Th>
             </>
           )}
-          <UI.Table.Th>Read?</UI.Table.Th>
+          <UI.Table.Th w="1%">Read?</UI.Table.Th>
         </UI.Table.Tr>
       </UI.Table.Thead>
       <UI.Table.Tbody>

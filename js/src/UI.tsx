@@ -16,6 +16,7 @@ import {
   IconAdjustments,
   IconBooks,
   IconCalendarEvent,
+  IconReload,
   IconTrash,
 } from "@tabler/icons-react";
 
@@ -101,9 +102,20 @@ export function Section({
   );
 }
 
-export function DeleteButton({ onClick }: { onClick: () => void }) {
+export function DeleteButton({
+  onClick,
+  disabled,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+}) {
   return (
-    <ActionIcon variant="subtle" size="sm" onClick={onClick}>
+    <ActionIcon
+      variant="subtle"
+      size="sm"
+      onClick={onClick}
+      disabled={disabled ?? false}
+    >
       <IconTrash style={{ width: "70%", height: "70%" }} stroke={1.5} />
     </ActionIcon>
   );
@@ -113,6 +125,14 @@ export function CalendarButton({ onClick }: { onClick: () => void }) {
   return (
     <ActionIcon variant="subtle" size="sm" onClick={onClick}>
       <IconCalendarEvent style={{ width: "70%", height: "70%" }} stroke={1.5} />
+    </ActionIcon>
+  );
+}
+
+export function ReloadButton({ onClick }: { onClick: () => void }) {
+  return (
+    <ActionIcon variant="subtle" size="sm" onClick={onClick}>
+      <IconReload style={{ width: "70%", height: "70%" }} stroke={1.5} />
     </ActionIcon>
   );
 }

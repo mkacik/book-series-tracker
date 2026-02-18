@@ -35,6 +35,35 @@ function SubscribeButton({
   );
 }
 
+function RefreshButton({
+  series,
+  refreshJobs,
+}: {
+  series: BookSeries;
+  refreshJobs: () => void;
+}) {
+  const scheduleJob = async () => {
+    const warning = `Do you want to tigger scrape for "${series.name}"?`;
+    if (confirm(warning) !== true) {
+      return;
+    }
+
+    const url = `${BackendRoute.Series}/${series.asin}`;
+    const fetchHelper = FetchHelper.withAlert("Error while submitting job.");
+    await fetchHelper.fetch<AddSeriesResult>(
+      new Request(url, { method: "POST" }),
+      (result) => {
+        refreshJobs();
+        alert(
+          `Submitted job ${result.job_id}. Go to Jobs tab to check progress.`,
+        );
+      },
+    );
+  };
+
+  return <UI.ReloadButton onClick={scheduleJob} />;
+}
+
 function DeleteButton({
   series,
   refreshSeries,
@@ -43,15 +72,22 @@ function DeleteButton({
   refreshSeries: () => void;
 }) {
   if (series.subscribers > 0) {
-    return null;
+    return <UI.DeleteButton disabled onClick={() => {}} />;
   }
 
   const deleteSeries = async () => {
     const warning =
       `Do you really want to stop tracking "${series.name}" series? This will ` +
-      "delete all its books from calendar. If you re-add the series later, books " +
-      "released in the meantime will not be visible in the tracker.";
-    if (confirm(warning) != true) {
+      "delete all its books from calendar for all users. If you re-add the series " +
+      "later, you will have to mark books as read by hand again.";
+    if (confirm(warning) !== true) {
+      return;
+    }
+
+    const secondWarning =
+      "Seriously, this action is not reversible, do you really want to proceed " +
+      `with deletion of "${series.name}"?`;
+    if (confirm(secondWarning) !== true) {
       return;
     }
 
@@ -65,52 +101,83 @@ function DeleteButton({
   return <UI.DeleteButton onClick={deleteSeries} />;
 }
 
-function SeriesListItem({
+function SeriesRow({
   series,
   refreshSeries,
+  refreshJobs,
 }: {
   series: BookSeries;
   refreshSeries: () => void;
+  refreshJobs: () => void;
 }) {
   return (
-    <UI.Flex gap="sm" align="center">
-      <SubscribeButton series={series} refreshSeries={refreshSeries} />
+    <UI.Table.Tr>
+      <UI.Table.Td w="1%">
+        <SubscribeButton series={series} refreshSeries={refreshSeries} />
+      </UI.Table.Td>
 
-      <UI.Text size="lg" c={series.subscribed ? undefined : "dimmed"}>
-        <b>{series.name}</b> ({series.count} books)
-      </UI.Text>
+      <UI.Table.Td>
+        <UI.Text size="lg" c={series.subscribed ? undefined : "dimmed"}>
+          <b>{series.name}</b>
+        </UI.Text>
+      </UI.Table.Td>
 
-      <UI.Anchor href={"https://www.amazon.com/dp/" + series.asin}>
-        {series.asin}
-      </UI.Anchor>
+      <UI.Table.Td>{series.count}</UI.Table.Td>
 
-      <DeleteButton series={series} refreshSeries={refreshSeries} />
-    </UI.Flex>
+      <UI.Table.Td>
+        <UI.Anchor
+          ff="monospace"
+          href={"https://www.amazon.com/dp/" + series.asin}
+        >
+          {series.asin}
+        </UI.Anchor>
+      </UI.Table.Td>
+
+      <UI.Table.Td>
+        <UI.Flex gap="xs">
+          <RefreshButton series={series} refreshJobs={refreshJobs} />
+          <DeleteButton series={series} refreshSeries={refreshSeries} />
+        </UI.Flex>
+      </UI.Table.Td>
+    </UI.Table.Tr>
   );
 }
 
-function SeriesList({
+function SeriesTable({
   series,
   refreshSeries,
+  refreshJobs,
 }: {
   series: Array<BookSeries>;
   refreshSeries: () => void;
+  refreshJobs: () => void;
 }) {
   if (series.length == 0) {
     return "No series tracked yet. Add series ASIN to start.";
   }
 
   return (
-    <UI.Flex direction="column" gap="0.4em">
-      <UI.Title order={4}>Subscribe to already tracked series</UI.Title>
-      {series.map((item, index) => (
-        <SeriesListItem
-          key={index}
-          series={item}
-          refreshSeries={refreshSeries}
-        />
-      ))}
-    </UI.Flex>
+    <UI.Table fz="md" stickyHeader highlightOnHover>
+      <UI.Table.Thead>
+        <UI.Table.Tr>
+          <UI.Table.Th></UI.Table.Th>
+          <UI.Table.Th>Series</UI.Table.Th>
+          <UI.Table.Th>Book count</UI.Table.Th>
+          <UI.Table.Th>ASIN</UI.Table.Th>
+          <UI.Table.Th w="1%"></UI.Table.Th>
+        </UI.Table.Tr>
+      </UI.Table.Thead>
+      <UI.Table.Tbody>
+        {series.map((item, index) => (
+          <SeriesRow
+            key={index}
+            series={item}
+            refreshSeries={refreshSeries}
+            refreshJobs={refreshJobs}
+          />
+        ))}
+      </UI.Table.Tbody>
+    </UI.Table>
   );
 }
 
@@ -162,7 +229,11 @@ export function SeriesPage({
     <UI.Section title="Tracked Series">
       <AddSeriesForm refreshJobs={refreshJobs} />
       <UI.Space h="xs" />
-      <SeriesList series={series} refreshSeries={refreshBooksAndSeries} />
+      <SeriesTable
+        series={series}
+        refreshSeries={refreshBooksAndSeries}
+        refreshJobs={refreshJobs}
+      />
     </UI.Section>
   );
 }
