@@ -105,17 +105,21 @@ function BookRow({
   book,
   refreshBooks,
   isMobile,
+  settings,
 }: {
   book: Book;
   refreshBooks: () => void;
   isMobile: boolean;
+  settings: AppSettings;
 }) {
   return (
     <UI.Table.Tr>
       <UI.Table.Td pl="xl">{book.title}</UI.Table.Td>
       {!isMobile && (
         <>
-          <UI.Table.Td>{book.author}</UI.Table.Td>
+          {!settings.hideBookAuthorColumn && (
+            <UI.Table.Td>{book.author}</UI.Table.Td>
+          )}
           <UI.Table.Td>
             <UI.Anchor
               ff="monospace"
@@ -145,11 +149,13 @@ function SeriesRows({
   books,
   refreshBooks,
   isMobile,
+  settings,
 }: {
   series: BookSeries;
   books: Array<Book>;
   refreshBooks: () => void;
   isMobile: boolean;
+  settings: AppSettings;
 }) {
   if (books.length === 0) {
     return null;
@@ -162,7 +168,7 @@ function SeriesRows({
   return (
     <>
       <UI.Table.Tr>
-        <UI.Table.Td colSpan={2}>
+        <UI.Table.Td colSpan={settings.hideBookAuthorColumn ? 1 : 2}>
           <UI.Text size="lg" fw={700}>
             {series.name}
           </UI.Text>
@@ -192,6 +198,7 @@ function SeriesRows({
           book={book}
           refreshBooks={refreshBooks}
           isMobile={isMobile}
+          settings={settings}
         />
       ))}
     </>
@@ -260,7 +267,9 @@ function BooksTable({
           <UI.Table.Th>Title</UI.Table.Th>
           {!isMobile && (
             <>
-              <UI.Table.Th>Author</UI.Table.Th>
+              {!settings.hideBookAuthorColumn && (
+                <UI.Table.Th>Author</UI.Table.Th>
+              )}
               <UI.Table.Th>ASIN</UI.Table.Th>
               <UI.Table.Th>Released</UI.Table.Th>
             </>
@@ -278,6 +287,7 @@ function BooksTable({
               books={booksBySeries.get(series.asin) || []}
               refreshBooks={refreshBooks}
               isMobile={isMobile}
+              settings={settings}
             />
           ))}
       </UI.Table.Tbody>

@@ -10,13 +10,15 @@ export type ReleaseDateFilter = "none" | "released" | "unreleased";
 
 export interface AppSettings extends VersionedSettings {
   hideReadBooks: boolean;
+  hideBookAuthorColumn: boolean;
   releaseDateFilter: ReleaseDateFilter;
 }
 
 function getDefaultAppSettings(): AppSettings {
   return {
-    version: 2,
+    version: 3,
     hideReadBooks: false,
+    hideBookAuthorColumn: false,
     releaseDateFilter: "none",
   } as AppSettings;
 }
@@ -45,6 +47,12 @@ function AppSettingsForm({
   const toggleHideReadBooks = () =>
     updateSettings({ ...settings, hideReadBooks: !settings.hideReadBooks });
 
+  const toggleHideBookAuthorColumn = () =>
+    updateSettings({
+      ...settings,
+      hideBookAuthorColumn: !settings.hideBookAuthorColumn,
+    });
+
   const updateReleaseDateFilter = (event: React.SyntheticEvent) => {
     const target = event.target as HTMLSelectElement;
     const value = target.value as ReleaseDateFilter;
@@ -57,6 +65,12 @@ function AppSettingsForm({
       <UI.Checkbox
         checked={settings.hideReadBooks}
         onChange={toggleHideReadBooks}
+      />
+
+      <UI.Text>Hide author column</UI.Text>
+      <UI.Checkbox
+        checked={settings.hideBookAuthorColumn}
+        onChange={toggleHideBookAuthorColumn}
       />
 
       <UI.Text>Filter based on release date</UI.Text>
