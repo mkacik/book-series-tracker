@@ -138,12 +138,12 @@ function BookRow({
 }
 
 function SeriesRows({
-  seriesName,
+  series,
   books,
   refreshBooks,
   isMobile,
 }: {
-  seriesName: string;
+  series: BookSeries;
   books: Array<Book>;
   refreshBooks: () => void;
   isMobile: boolean;
@@ -159,12 +159,24 @@ function SeriesRows({
   return (
     <>
       <UI.Table.Tr>
-        <UI.Table.Td colSpan={5}>
+        <UI.Table.Td colSpan={2}>
           <UI.Text size="lg" fw={700}>
-            {seriesName}
+            {series.name}
           </UI.Text>
           <UI.Text>by {author}</UI.Text>
         </UI.Table.Td>
+
+        <UI.Table.Td>
+          <UI.Anchor
+            fw={700}
+            ff="monospace"
+            href={"https://www.amazon.com/dp/" + series.asin}
+          >
+            {series.asin}
+          </UI.Anchor>
+        </UI.Table.Td>
+
+        <UI.Table.Td colSpan={2}></UI.Table.Td>
       </UI.Table.Tr>
 
       {sortedBooks.map((book) => (
@@ -235,7 +247,7 @@ function BooksTable({
   }
 
   return (
-    <UI.Table fz="md" stickyHeader>
+    <UI.Table fz="md" stickyHeader highlightOnHover>
       <UI.Table.Thead>
         <UI.Table.Tr>
           <UI.Table.Th>Title</UI.Table.Th>
@@ -255,7 +267,7 @@ function BooksTable({
           .map((series) => (
             <SeriesRows
               key={series.asin}
-              seriesName={series.name}
+              series={series}
               books={booksBySeries.get(series.asin) || []}
               refreshBooks={refreshBooks}
               isMobile={isMobile}

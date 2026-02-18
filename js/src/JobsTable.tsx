@@ -67,7 +67,7 @@ function JobRow({ job }: { job: Job }) {
 
 export function JobsTable({ jobs }: { jobs: Array<Job> }) {
   return (
-    <UI.Table stickyHeader>
+    <UI.Table stickyHeader highlightOnHover>
       <UI.Table.Thead>
         <UI.Table.Tr>
           <UI.Table.Th>ID</UI.Table.Th>
