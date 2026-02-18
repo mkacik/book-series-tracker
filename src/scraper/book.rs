@@ -27,25 +27,38 @@ pub async fn scrape_book_page(
     // 2. Actual book data is stored in a list with no annotations
     let items = section.find_all(By::Tag("li")).await?;
 
-    // 3. Fourth list item denotes publication date
-    let item = &items[3];
-
-    // 4. Publication date is stored in last span
-    let spans = item.find_all(By::Tag("span")).await?;
-    let span = match spans.last() {
-        Some(value) => value,
-        None => return Err("Publication date span missing.".into()),
+    // 3. Normally fourth zero-indexed list item denotes publication date
+    let release_date = match try_for_release_date(&items[3]).await {
+        Ok(date) => date,
+        // 3a. ...but sometimes it's third list item instead
+        Err(_) => try_for_release_date(&items[2]).await?,
     };
-
-    let maybe_release_date = span.inner_html().await?;
-    log::debug!("Book release date: '{}'", &maybe_release_date);
-    let release_date = parse_date(maybe_release_date)?;
 
     let result = ScrapeBookPageResult {
         release_date: release_date,
     };
 
     Ok(result)
+}
+
+/* Publication date stored in last span (counted by opening tag, like selenium does):
+<li>
+  <span class="a-list-item">
+    <span class="a-text-bold">Publication date‏:‎</span>
+    <span>October 25, 2024</span>
+  </span>
+</li> */
+async fn try_for_release_date(elem: &WebElement) -> Result<String, Box<dyn Error + Send + Sync>> {
+    let spans = elem.find_all(By::Tag("span")).await?;
+    let span = match spans.last() {
+        Some(value) => value,
+        None => return Err("Publication date span missing.".into()),
+    };
+
+    let maybe_release_date = span.inner_html().await?;
+    log::debug!("Trying to parse release date: '{}'", &maybe_release_date);
+
+    parse_date(maybe_release_date)
 }
 
 #[cfg(test)]
