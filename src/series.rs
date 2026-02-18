@@ -9,6 +9,7 @@ use crate::user::User;
 pub struct BookSeries {
     pub asin: String,
     pub name: String,
+    pub author: String,
     pub time_first_seen: i64,
 }
 
@@ -40,9 +41,11 @@ impl BookSeries {
     pub async fn save(&self, db: &Database) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
         sqlx::query!(
-            "INSERT OR IGNORE INTO series (asin, name, time_first_seen) VALUES (?1, ?2, ?3)",
+            "INSERT OR IGNORE INTO series (asin, name, author, time_first_seen)
+            VALUES (?1, ?2, ?3, ?4)",
             self.asin,
             self.name,
+            self.author,
             self.time_first_seen
         )
         .execute(&mut *conn)

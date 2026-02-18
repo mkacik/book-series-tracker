@@ -121,9 +121,17 @@ pub async fn scrape_series_page(
         books.push(book);
     }
 
+    // Authors field on the scraped site can be full of BS because of different formatting
+    // of the same across books. For now it's good enough to save author of first book
+    // as author of series.
+    let author = match books.first() {
+        Some(book) => book.author.to_string(),
+        None => "_placeholder_".to_string(),
+    };
     Ok(ScrapeSeriesPageResult {
         series: BookSeries {
             name: series_name,
+            author: author,
             asin: series_asin.to_string(),
             time_first_seen: now(),
         },

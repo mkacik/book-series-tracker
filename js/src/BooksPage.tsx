@@ -162,9 +162,6 @@ function SeriesRows({
   }
 
   const sortedBooks = books.toSorted(sortByOrdinal);
-  // FIXME: change this once series author is scraped
-  const author = books[0].author!;
-
   return (
     <>
       <UI.Table.Tr>
@@ -172,7 +169,7 @@ function SeriesRows({
           <UI.Text size="lg" fw={700}>
             {series.name}
           </UI.Text>
-          <UI.Text>by {author}</UI.Text>
+          <UI.Text>by {series.author}</UI.Text>
         </UI.Table.Td>
 
         {isMobile ? null : (

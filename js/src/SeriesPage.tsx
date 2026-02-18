@@ -117,9 +117,14 @@ function SeriesRow({
       </UI.Table.Td>
 
       <UI.Table.Td>
-        <UI.Text size="lg" c={series.subscribed ? undefined : "dimmed"}>
-          <b>{series.name}</b>
-        </UI.Text>
+        <UI.Flex gap="xs" align="center">
+          <UI.Text size="lg" c={series.subscribed ? undefined : "dimmed"}>
+            <b>{series.name}</b>
+          </UI.Text>
+          <UI.Text size="md" c={series.subscribed ? undefined : "dimmed"}>
+            by {series.author}
+          </UI.Text>
+        </UI.Flex>
       </UI.Table.Td>
 
       <UI.Table.Td>{series.count}</UI.Table.Td>
