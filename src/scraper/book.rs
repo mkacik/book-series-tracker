@@ -32,11 +32,14 @@ pub async fn scrape_book_page(
 
     // 4. Publication date is stored in last span
     let spans = item.find_all(By::Tag("span")).await?;
-    let span = spans.last().unwrap();
+    let span = match spans.last() {
+        Some(value) => value,
+        None => return Err("Publication date span missing.".into()),
+    };
 
     let maybe_release_date = span.inner_html().await?;
     log::debug!("Book release date: '{}'", &maybe_release_date);
-    let release_date = parse_date(maybe_release_date).unwrap();
+    let release_date = parse_date(maybe_release_date)?;
 
     let result = ScrapeBookPageResult {
         release_date: release_date,
