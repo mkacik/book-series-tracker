@@ -9,6 +9,7 @@ export enum BackendRoute {
   MarkRead = "/api/books/mark_read",
   MarkUnread = "/api/books/mark_unread",
   Series = "/api/series",
+  ScrapeAll = "/api/series/all",
   Subscribe = "/api/series/subscribe",
   Unsubscribe = "/api/series/unsubscribe",
   Jobs = "/api/jobs",

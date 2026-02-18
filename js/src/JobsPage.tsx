@@ -14,7 +14,7 @@ function ScrapeButton({ refreshJobs }: { refreshJobs: () => void }) {
 
     const fetchHelper = FetchHelper.withAlert("Error while triggering scrape.");
     await fetchHelper.fetch(
-      new Request(BackendRoute.Jobs, { method: "POST" }),
+      new Request(BackendRoute.ScrapeAll, { method: "POST" }),
       (_result) => refreshJobs(),
     );
   };
