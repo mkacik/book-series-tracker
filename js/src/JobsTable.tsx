@@ -7,7 +7,7 @@ function pad(num: number): string {
   return num.toString().padStart(2, "0");
 }
 
-function formatTimestamp(ts: number | null): string {
+function Timestamp({ ts }: { ts: number | null }) {
   if (ts == null) {
     return "";
   }
@@ -19,7 +19,14 @@ function formatTimestamp(ts: number | null): string {
   const day = pad(date.getDate());
   const time = date.toTimeString().replace(/ .*/, "");
 
-  return `${year}-${month}-${day} ${time}`;
+  return (
+    <>
+      <span style={{ whiteSpace: "nowrap" }}>
+        {year}-{month}-{day}
+      </span>{" "}
+      {time}
+    </>
+  );
 }
 
 function JobStatus({ status }: { status: string }) {
@@ -44,9 +51,15 @@ function JobRow({ job }: { job: Job }) {
         <JobStatus status={job.status} />
       </UI.Table.Td>
       <UI.Table.Td>{duration_ms}</UI.Table.Td>
-      <UI.Table.Td>{formatTimestamp(job.time_created)}</UI.Table.Td>
-      <UI.Table.Td>{formatTimestamp(job.time_started)}</UI.Table.Td>
-      <UI.Table.Td>{formatTimestamp(job.time_finished)}</UI.Table.Td>
+      <UI.Table.Td>
+        <Timestamp ts={job.time_created} />
+      </UI.Table.Td>
+      <UI.Table.Td>
+        <Timestamp ts={job.time_started} />
+      </UI.Table.Td>
+      <UI.Table.Td>
+        <Timestamp ts={job.time_finished} />
+      </UI.Table.Td>
       <UI.Table.Td>{job.errors}</UI.Table.Td>
     </UI.Table.Tr>
   );
