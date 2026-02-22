@@ -165,7 +165,7 @@ function App() {
           />
         );
       case Route.Jobs:
-        return <JobsPage jobs={jobs} refreshJobs={fetchJobs} />;
+        return <JobsPage jobs={jobs} />;
       // break omitted: fallback to 404
       default:
         return <UI.PageNotFound />;

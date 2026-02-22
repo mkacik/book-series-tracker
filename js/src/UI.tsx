@@ -193,6 +193,7 @@ export {
   Flex,
   Modal,
   NativeSelect,
+  Pagination,
   PasswordInput,
   Space,
   Switch,

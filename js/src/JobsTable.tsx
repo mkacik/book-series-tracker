@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 import { Job } from "./generated/types";
 
 import * as UI from "./UI";
@@ -65,27 +66,37 @@ function JobRow({ job }: { job: Job }) {
   );
 }
 
+const JOBS_PER_PAGE = 100;
+
 export function JobsTable({ jobs }: { jobs: Array<Job> }) {
+  const [page, setPage] = useState<number>(1);
+  const pageCount = Math.ceil(jobs.length / JOBS_PER_PAGE);
+
+  const firstIndex = JOBS_PER_PAGE * (page - 1);
+  const slice = jobs.slice(firstIndex, firstIndex + JOBS_PER_PAGE);
   return (
-    <UI.Table stickyHeader highlightOnHover>
-      <UI.Table.Thead>
-        <UI.Table.Tr>
-          <UI.Table.Th>ID</UI.Table.Th>
-          <UI.Table.Th>Params</UI.Table.Th>
-          <UI.Table.Th>User</UI.Table.Th>
-          <UI.Table.Th>Status</UI.Table.Th>
-          <UI.Table.Th>Duration (s)</UI.Table.Th>
-          <UI.Table.Th>Job Created At</UI.Table.Th>
-          <UI.Table.Th>Processing Started At</UI.Table.Th>
-          <UI.Table.Th>Processing Finished At</UI.Table.Th>
-          <UI.Table.Th>Errors</UI.Table.Th>
-        </UI.Table.Tr>
-      </UI.Table.Thead>
-      <UI.Table.Tbody>
-        {jobs.map((job, index) => (
-          <JobRow key={index} job={job} />
-        ))}
-      </UI.Table.Tbody>
-    </UI.Table>
+    <>
+      <UI.Pagination total={pageCount} value={page} onChange={setPage} />
+      <UI.Table stickyHeader highlightOnHover>
+        <UI.Table.Thead>
+          <UI.Table.Tr>
+            <UI.Table.Th>ID</UI.Table.Th>
+            <UI.Table.Th>Params</UI.Table.Th>
+            <UI.Table.Th>User</UI.Table.Th>
+            <UI.Table.Th>Status</UI.Table.Th>
+            <UI.Table.Th>Duration (s)</UI.Table.Th>
+            <UI.Table.Th>Job Created At</UI.Table.Th>
+            <UI.Table.Th>Processing Started At</UI.Table.Th>
+            <UI.Table.Th>Processing Finished At</UI.Table.Th>
+            <UI.Table.Th>Errors</UI.Table.Th>
+          </UI.Table.Tr>
+        </UI.Table.Thead>
+        <UI.Table.Tbody>
+          {slice.map((job, index) => (
+            <JobRow key={index} job={job} />
+          ))}
+        </UI.Table.Tbody>
+      </UI.Table>
+    </>
   );
 }
