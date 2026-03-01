@@ -35,7 +35,7 @@ pub async fn add(db: &State<Arc<Database>>, user: &User, asin: &str) -> ApiRespo
 }
 
 #[delete("/series/<asin>")]
-pub async fn remove(db: &State<Arc<Database>>, _user: &User, asin: &str) -> ApiResponse {
+pub async fn remove(db: &State<Arc<Database>>, asin: &str) -> ApiResponse {
     if BookSeries::fetch_by_asin(db, asin).await.is_err() {
         return ApiResponse::BadRequest {
             message: String::from("Series does not exist!"),

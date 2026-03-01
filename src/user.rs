@@ -45,7 +45,7 @@ impl<'r> FromRequest<'r> for &'r User {
 
         match user {
             Ok(value) => Outcome::Success(value),
-            _ => Outcome::Forward(Status::Unauthorized),
+            _ => Outcome::Forward(Status::NotFound),
         }
     }
 }

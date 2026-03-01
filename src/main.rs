@@ -12,11 +12,11 @@ mod controllers;
 mod credentials;
 mod crypto;
 mod database;
+mod gatekeeper;
 mod genjs;
 mod passwords;
 mod reads;
 mod response;
-mod routes;
 mod scraper;
 mod series;
 mod subscriptions;
@@ -25,6 +25,7 @@ mod user;
 use crate::controllers::series::enqueue_all_series;
 use crate::crypto::init_crypto;
 use crate::database::Database;
+use crate::gatekeeper::GateKeeper;
 use crate::passwords::Command as PasswordsCommand;
 use crate::scraper::server::JobServer;
 
@@ -88,7 +89,14 @@ async fn main() -> anyhow::Result<()> {
             spawn_thread_for_daily_scrape(database.clone());
 
             let _rocket = rocket::build()
-                .mount("/", routes![routes::index, routes::catchall,])
+                .mount(
+                    "/",
+                    routes![
+                        controllers::index::index,
+                        controllers::index::not_found,
+                        controllers::index::catch_all,
+                    ],
+                )
                 .mount(
                     "/api",
                     routes![
@@ -111,6 +119,7 @@ async fn main() -> anyhow::Result<()> {
                 .mount("/static", FileServer::from(relative!("www/static")))
                 .manage(database)
                 .manage(job_server)
+                .attach(GateKeeper {})
                 .launch()
                 .await?;
         }
