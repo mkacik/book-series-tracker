@@ -68,8 +68,18 @@ async fn process_series(db: &Database, asin: &str) -> anyhow::Result<()> {
     result.series.save(db).await?;
 
     for remote_book in result.books.iter() {
-        if !local_books.contains_key(&remote_book.asin) {
-            remote_book.save(db).await?;
+        match local_books.get(&remote_book.asin) {
+            Some(local_book) => {
+                if remote_book.release_date == local_book.release_date {
+                    continue;
+                }
+                if let Some(release_date) = &remote_book.release_date {
+                    Book::update_release_date(&db, &local_book.asin, &release_date).await?;
+                }
+            }
+            None => {
+                remote_book.save(db).await?;
+            }
         }
     }
 

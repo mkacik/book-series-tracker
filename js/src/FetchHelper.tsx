@@ -79,7 +79,7 @@ export class FetchHelper {
       const response = await fetch(request);
 
       if (!response.ok) {
-        let errorMessage = await this.getErrorMessage(response);
+        const errorMessage = await this.getErrorMessage(response);
         throw new Error(errorMessage);
       }
 
