@@ -72,7 +72,7 @@ export function Main({ children }: { children: React.ReactNode }) {
   return (
     <AppShell.Main>
       <ScrollArea
-        h={`calc(100vh - ${HEADER_HEIGHT}px)`}
+        h={`calc(100dvh - ${HEADER_HEIGHT}px)`}
         type="always"
         offsetScrollbars="y"
       >
