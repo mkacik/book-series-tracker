@@ -4,3 +4,4 @@ target/**
 *.swp
 **/bundle.js
 sanitizer/*.html
+.idea/
