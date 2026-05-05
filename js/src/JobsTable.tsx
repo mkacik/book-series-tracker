@@ -38,7 +38,7 @@ function JobStatus({ status }: { status: string }) {
 }
 
 function JobRow({ job }: { job: Job }) {
-  const duration_ms =
+  const duration_s =
     job.time_started && job.time_finished
       ? (job.time_finished - job.time_started) / 1000
       : "";
@@ -51,16 +51,13 @@ function JobRow({ job }: { job: Job }) {
       <UI.Table.Td>
         <JobStatus status={job.status} />
       </UI.Table.Td>
-      <UI.Table.Td>{duration_ms}</UI.Table.Td>
       <UI.Table.Td>
         <Timestamp ts={job.time_created} />
       </UI.Table.Td>
       <UI.Table.Td>
-        <Timestamp ts={job.time_started} />
+        {job.time_started ? <Timestamp ts={job.time_started} /> : "-"}
       </UI.Table.Td>
-      <UI.Table.Td>
-        <Timestamp ts={job.time_finished} />
-      </UI.Table.Td>
+      <UI.Table.Td>{duration_s}</UI.Table.Td>
       <UI.Table.Td>{job.errors ?? "-"}</UI.Table.Td>
     </UI.Table.Tr>
   );
@@ -84,10 +81,9 @@ export function JobsTable({ jobs }: { jobs: Array<Job> }) {
             <UI.Table.Th>Params</UI.Table.Th>
             <UI.Table.Th>User</UI.Table.Th>
             <UI.Table.Th>Status</UI.Table.Th>
+            <UI.Table.Th>Time Created</UI.Table.Th>
+            <UI.Table.Th>Time Started</UI.Table.Th>
             <UI.Table.Th>Duration (s)</UI.Table.Th>
-            <UI.Table.Th>Job Created At</UI.Table.Th>
-            <UI.Table.Th>Processing Started At</UI.Table.Th>
-            <UI.Table.Th>Processing Finished At</UI.Table.Th>
             <UI.Table.Th>Errors</UI.Table.Th>
           </UI.Table.Tr>
         </UI.Table.Thead>
