@@ -44,7 +44,7 @@ pub async fn scrape_series_page(
     }
 
     // 2. Extract series title by id: collection-titler
-    let elem_series_name = driver.find(By::Id("collection-title")).await?;
+    let elem_series_name = driver.find(By::Id("title")).await?;
     let series_name = sanitize_string(elem_series_name.inner_html().await?);
 
     // 3. Find all children by class name: series-childAsin-item
