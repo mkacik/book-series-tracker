@@ -1,0 +1,1 @@
+ALTER TABLE series ADD COLUMN skip_daily_scrape BOOLEAN DEFAULT 0;

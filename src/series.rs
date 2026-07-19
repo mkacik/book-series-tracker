@@ -11,6 +11,7 @@ pub struct BookSeries {
     pub name: String,
     pub author: String,
     pub time_first_seen: i64,
+    pub skip_daily_scrape: bool,
 }
 
 #[derive(sqlx::FromRow, Serialize, TS, Debug)]
@@ -41,12 +42,14 @@ impl BookSeries {
     pub async fn save(&self, db: &Database) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
         sqlx::query!(
-            "INSERT OR IGNORE INTO series (asin, name, author, time_first_seen)
-            VALUES (?1, ?2, ?3, ?4)",
+            "INSERT OR REPLACE INTO series
+            (asin, name, author, time_first_seen, skip_daily_scrape)
+            VALUES (?1, ?2, ?3, ?4, ?5)",
             self.asin,
             self.name,
             self.author,
-            self.time_first_seen
+            self.time_first_seen,
+            self.skip_daily_scrape
         )
         .execute(&mut *conn)
         .await?;

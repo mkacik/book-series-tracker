@@ -134,6 +134,7 @@ pub async fn scrape_series_page(
             author: author,
             asin: series_asin.to_string(),
             time_first_seen: now(),
+            skip_daily_scrape: false,
         },
         books: books,
     })

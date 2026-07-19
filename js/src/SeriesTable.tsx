@@ -5,6 +5,39 @@ import { FetchHelper } from "./FetchHelper";
 
 import * as UI from "./UI";
 
+function PauseScrapesButton({
+  series,
+  refreshSeries,
+}: {
+  series: BookSeries;
+  refreshSeries: () => void;
+}) {
+  const updateSkipSeries = async () => {
+    const verb = series.skip_daily_scrape ? "resume" : "pause";
+    const warning = `Do you want to ${verb} daily scrapes for "${series.name}"?`;
+    if (confirm(warning) !== true) {
+      return;
+    }
+
+    const route = series.skip_daily_scrape
+      ? BackendRoute.UnskipSeries
+      : BackendRoute.SkipSeries;
+    const url = `${route}/${series.asin}`;
+    const fetchHelper = FetchHelper.withAlert(
+      "Error while skipping/unskipping series.",
+    );
+    await fetchHelper.fetch(new Request(url, { method: "POST" }), (_result) =>
+      refreshSeries(),
+    );
+  };
+
+  return series.skip_daily_scrape ? (
+    <UI.PlayButton onClick={updateSkipSeries} />
+  ) : (
+    <UI.PauseButton onClick={updateSkipSeries} />
+  );
+}
+
 function SubscribeButton({
   series,
   refreshSeries,
@@ -140,6 +173,7 @@ function SeriesRow({
       <UI.Table.Td>
         <UI.Flex gap="xs">
           <RefreshButton series={series} refreshJobs={refreshJobs} />
+          <PauseScrapesButton series={series} refreshSeries={refreshSeries} />
           <DeleteButton series={series} refreshSeries={refreshSeries} />
         </UI.Flex>
       </UI.Table.Td>

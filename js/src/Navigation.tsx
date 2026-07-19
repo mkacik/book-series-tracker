@@ -13,6 +13,8 @@ export enum BackendRoute {
   Subscribe = "/api/series/subscribe",
   Unsubscribe = "/api/series/unsubscribe",
   Jobs = "/api/jobs",
+  SkipSeries = "/api/series/skip",
+  UnskipSeries = "/api/series/unskip",
 
   Login = "/api/login",
   Logout = "/api/logout",

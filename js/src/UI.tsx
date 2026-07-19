@@ -16,6 +16,8 @@ import {
   IconAdjustments,
   IconBooks,
   IconCalendarEvent,
+  IconPlayerPause,
+  IconPlayerPlay,
   IconReload,
   IconTrash,
 } from "@tabler/icons-react";
@@ -133,6 +135,22 @@ export function ReloadButton({ onClick }: { onClick: () => void }) {
   return (
     <ActionIcon variant="subtle" size="sm" onClick={onClick}>
       <IconReload style={{ width: "70%", height: "70%" }} stroke={1.5} />
+    </ActionIcon>
+  );
+}
+
+export function PauseButton({ onClick }: { onClick: () => void }) {
+  return (
+    <ActionIcon variant="subtle" size="sm" onClick={onClick}>
+      <IconPlayerPause style={{ width: "70%", height: "70%" }} stroke={1.5} />
+    </ActionIcon>
+  );
+}
+
+export function PlayButton({ onClick }: { onClick: () => void }) {
+  return (
+    <ActionIcon variant="subtle" size="sm" onClick={onClick}>
+      <IconPlayerPlay style={{ width: "70%", height: "70%" }} stroke={1.5} />
     </ActionIcon>
   );
 }

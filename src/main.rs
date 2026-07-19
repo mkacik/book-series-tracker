@@ -114,6 +114,8 @@ async fn main() -> anyhow::Result<()> {
                         controllers::series::remove,
                         controllers::series::subscribe,
                         controllers::series::unsubscribe,
+                        controllers::series::skip,
+                        controllers::series::unskip,
                     ],
                 )
                 .mount("/static", FileServer::from(relative!("www/static")))

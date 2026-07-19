@@ -76,6 +76,44 @@ pub async fn unsubscribe(db: &State<Arc<Database>>, user: &User, asin: &str) -> 
     }
 }
 
+#[post("/series/skip/<asin>")]
+pub async fn skip(db: &State<Arc<Database>>, asin: &str) -> ApiResponse {
+    let mut series = match BookSeries::fetch_by_asin(db, asin).await {
+        Ok(value) => value,
+        Err(_) => {
+            return ApiResponse::BadRequest {
+                message: String::from("Series does not exist!"),
+            }
+        }
+    };
+
+    series.skip_daily_scrape = true;
+
+    match series.save(db).await {
+        Ok(_) => ApiResponse::Success,
+        Err(error) => ApiResponse::from_error(error),
+    }
+}
+
+#[post("/series/unskip/<asin>")]
+pub async fn unskip(db: &State<Arc<Database>>, asin: &str) -> ApiResponse {
+    let mut series = match BookSeries::fetch_by_asin(db, asin).await {
+        Ok(value) => value,
+        Err(_) => {
+            return ApiResponse::BadRequest {
+                message: String::from("Series does not exist!"),
+            }
+        }
+    };
+
+    series.skip_daily_scrape = false;
+
+    match series.save(db).await {
+        Ok(_) => ApiResponse::Success,
+        Err(error) => ApiResponse::from_error(error),
+    }
+}
+
 #[post("/series/all")]
 pub async fn scrape_all(db: &State<Arc<Database>>, user: &User) -> ApiResponse {
     match enqueue_all_series(db, Some(user)).await {
@@ -87,6 +125,9 @@ pub async fn scrape_all(db: &State<Arc<Database>>, user: &User) -> ApiResponse {
 pub async fn enqueue_all_series(db: &Database, user: Option<&User>) -> anyhow::Result<()> {
     let all_series = BookSeries::fetch_all(db).await?;
     for series in all_series {
+        if series.skip_daily_scrape {
+            continue;
+        }
         let params = JobParams::Series { asin: series.asin };
         Job::add(db, params, user).await?;
     }
