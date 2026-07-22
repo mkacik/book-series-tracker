@@ -42,7 +42,7 @@ impl BookSeries {
     pub async fn save(&self, db: &Database) -> anyhow::Result<()> {
         let mut conn = db.acquire_db_conn().await?;
         sqlx::query!(
-            "INSERT OR REPLACE INTO series
+            "INSERT OR IGNORE INTO series
             (asin, name, author, time_first_seen, skip_daily_scrape)
             VALUES (?1, ?2, ?3, ?4, ?5)",
             self.asin,
@@ -50,6 +50,23 @@ impl BookSeries {
             self.author,
             self.time_first_seen,
             self.skip_daily_scrape
+        )
+        .execute(&mut *conn)
+        .await?;
+
+        Ok(())
+    }
+
+    pub async fn update_skip_daily_scrape(
+        &self,
+        db: &Database,
+        skip_daily_scrape: bool,
+    ) -> anyhow::Result<()> {
+        let mut conn = db.acquire_db_conn().await?;
+        sqlx::query!(
+            "UPDATE series SET skip_daily_scrape = ?1 WHERE asin = ?2",
+            skip_daily_scrape,
+            self.asin,
         )
         .execute(&mut *conn)
         .await?;

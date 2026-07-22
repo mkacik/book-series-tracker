@@ -78,26 +78,16 @@ pub async fn unsubscribe(db: &State<Arc<Database>>, user: &User, asin: &str) -> 
 
 #[post("/series/skip/<asin>")]
 pub async fn skip(db: &State<Arc<Database>>, asin: &str) -> ApiResponse {
-    let mut series = match BookSeries::fetch_by_asin(db, asin).await {
-        Ok(value) => value,
-        Err(_) => {
-            return ApiResponse::BadRequest {
-                message: String::from("Series does not exist!"),
-            }
-        }
-    };
-
-    series.skip_daily_scrape = true;
-
-    match series.save(db).await {
-        Ok(_) => ApiResponse::Success,
-        Err(error) => ApiResponse::from_error(error),
-    }
+    set_skip_daily_scrape(db, asin, true).await
 }
 
 #[post("/series/unskip/<asin>")]
 pub async fn unskip(db: &State<Arc<Database>>, asin: &str) -> ApiResponse {
-    let mut series = match BookSeries::fetch_by_asin(db, asin).await {
+    set_skip_daily_scrape(db, asin, false).await
+}
+
+async fn set_skip_daily_scrape(db: &Database, asin: &str, skip: bool) -> ApiResponse {
+    let series = match BookSeries::fetch_by_asin(db, asin).await {
         Ok(value) => value,
         Err(_) => {
             return ApiResponse::BadRequest {
@@ -106,9 +96,7 @@ pub async fn unskip(db: &State<Arc<Database>>, asin: &str) -> ApiResponse {
         }
     };
 
-    series.skip_daily_scrape = false;
-
-    match series.save(db).await {
+    match series.update_skip_daily_scrape(db, skip).await {
         Ok(_) => ApiResponse::Success,
         Err(error) => ApiResponse::from_error(error),
     }
